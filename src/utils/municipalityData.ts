@@ -28,26 +28,20 @@ export const getAllMunicipalities = (): Municipality[] => {
 
 // Enhanced normalization function
 export const normalizeMunicipalityName = (name: string): string => {
+  // Convert to lowercase and take first part before any dash
   return name
     .toLowerCase()
-    .replace(/æ/g, 'ae')
-    .replace(/ø/g, 'o')
-    .replace(/å/g, 'a')
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, ''); // Remove any other special characters
+    .split('-')[0]
+    .trim();
 };
 
 // Add a denormalization function to convert URL back to proper name
-export const denormalizeMunicipalityName = (urlName: string): string => {
-  // Create a map of normalized names to original names
-  const nameMap = new Map(
-    municipalities.map(m => [
-      normalizeMunicipalityName(m.name),
-      m.name
-    ])
+export const denormalizeMunicipalityName = (normalized: string): string => {
+  const municipalities = getAllMunicipalities();
+  const municipality = municipalities.find(m => 
+    normalizeMunicipalityName(m.name) === normalized
   );
-  
-  return nameMap.get(urlName.toLowerCase()) || urlName;
+  return municipality ? municipality.name : normalized;
 };
 
 export const getNearbyMunicipalities = (cityName: string): string[] => {

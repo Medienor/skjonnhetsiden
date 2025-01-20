@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';
 import { ArrowRight } from "lucide-react";
 import { supabase } from '../utils/supabase';
+import { RequestOfferForm } from '@/components/RequestOfferForm';
 
 const cityArticles = [
   {
@@ -68,10 +69,23 @@ interface Article {
   created_at: string;
 }
 
-const CompanyCard = ({ company }: { company: Company }) => {
-  // Mock review score - in real app, this would come from your backend
-  const reviewScore = (Math.random() * 2 + 3).toFixed(1);
-  const reviewCount = Math.floor(Math.random() * 50) + 1;
+interface CompanyWithReviews extends Company {
+  reviewScore: number;
+  reviewCount: number;
+  reviews: {
+    averageRating: number;
+    totalReviews: number;
+  };
+}
+
+interface IpLocation {
+  city: string;
+  postal: string;
+  region: string;
+  country: string;
+}
+
+const CompanyCard = ({ company }: { company: CompanyWithReviews }) => {
   const normalizedName = normalizeCompanyName(company.navn);
 
   return (
@@ -88,7 +102,7 @@ const CompanyCard = ({ company }: { company: Company }) => {
                 <Star
                   key={i}
                   className={`w-4 h-4 ${
-                    i < Math.floor(Number(reviewScore))
+                    i < Math.floor(Number(company.reviewScore))
                       ? "text-yellow-400 fill-yellow-400"
                       : "text-gray-300"
                   }`}
@@ -96,7 +110,7 @@ const CompanyCard = ({ company }: { company: Company }) => {
               ))}
             </div>
             <span className="text-sm text-gray-600 ml-2">
-              {reviewScore} ({reviewCount} vurderinger)
+              {company.reviewScore.toFixed(1)} ({company.reviewCount} vurderinger)
             </span>
           </div>
         </div>
@@ -129,35 +143,180 @@ const CompanyCard = ({ company }: { company: Company }) => {
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>(() => {
-    // Initially show only first MAX_ITEMS companies
-    return getAccountingFirms().slice(0, MAX_ITEMS);
+  const [filteredCompanies, setFilteredCompanies] = useState<CompanyWithReviews[]>(() => {
+    // Initially show only first MAX_ITEMS companies without reviews
+    return getAccountingFirms()
+      .slice(0, MAX_ITEMS)
+      .map(company => ({
+        ...company,
+        reviewScore: 0,
+        reviewCount: 0,
+        reviews: {
+          averageRating: 0,
+          totalReviews: 0
+        }
+      }));
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [formData, setFormData] = useState({
-    companyName: '',
-    postnumber: '',
-    email: '',
-    phone: '',
-    acceptTerms: false
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [municipality, setMunicipality] = useState<string | null>(null);
   const [recentArticles, setRecentArticles] = useState<Article[]>([]);
+  const [userLocation, setUserLocation] = useState<IpLocation | null>(null);
+
+  useEffect(() => {
+    const fetchCompaniesWithReviews = async () => {
+      try {
+        const initialCompanies = getAccountingFirms().slice(0, MAX_ITEMS);
+        const orgNumbers = initialCompanies.map(company => company.organisasjonsnummer);
+        
+        const { data: reviewsData, error } = await supabase
+          .from('reviews')
+          .select('*')
+          .in('org_number', orgNumbers);
+
+        if (error) throw error;
+
+        const reviewsByCompany = (reviewsData || []).reduce((acc: Record<string, Array<{rating: number}>>, review) => {
+          if (!acc[review.org_number]) {
+            acc[review.org_number] = [];
+          }
+          acc[review.org_number].push(review);
+          return acc;
+        }, {});
+
+        const companiesWithReviews: CompanyWithReviews[] = initialCompanies.map(company => {
+          const companyReviews = reviewsByCompany[company.organisasjonsnummer] || [];
+          const totalReviews = companyReviews.length;
+          const averageRating = totalReviews > 0
+            ? companyReviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+            : 0;
+
+          return {
+            ...company,
+            reviewScore: averageRating,
+            reviewCount: totalReviews,
+            reviews: {
+              averageRating,
+              totalReviews
+            }
+          };
+        });
+
+        // Sort companies by location relevance and reviews
+        const sortedCompanies = [...companiesWithReviews].sort((a, b) => {
+          if (userLocation) {
+            // Exact postal code match gets highest priority
+            if (a.forretningsadresse?.postnummer === userLocation.postal && 
+                b.forretningsadresse?.postnummer !== userLocation.postal) {
+              return -1;
+            }
+            if (b.forretningsadresse?.postnummer === userLocation.postal && 
+                a.forretningsadresse?.postnummer !== userLocation.postal) {
+              return 1;
+            }
+
+            // Same city gets second priority
+            const aInCity = a.forretningsadresse?.kommune.toLowerCase() === userLocation.city.toLowerCase();
+            const bInCity = b.forretningsadresse?.kommune.toLowerCase() === userLocation.city.toLowerCase();
+            if (aInCity && !bInCity) return -1;
+            if (bInCity && !aInCity) return 1;
+
+            // Same region gets third priority
+            const aInRegion = a.forretningsadresse?.kommune.toLowerCase().includes(userLocation.region.toLowerCase());
+            const bInRegion = b.forretningsadresse?.kommune.toLowerCase().includes(userLocation.region.toLowerCase());
+            if (aInRegion && !bInRegion) return -1;
+            if (bInRegion && !aInRegion) return 1;
+          }
+
+          // If location is same or no location, sort by reviews
+          if (a.reviewCount > 0 && b.reviewCount > 0) {
+            return b.reviewScore - a.reviewScore;
+          }
+          if (a.reviewCount > 0) return -1;
+          if (b.reviewCount > 0) return 1;
+          
+          // Finally sort by name
+          return a.navn.localeCompare(b.navn, 'nb');
+        });
+
+        setFilteredCompanies(sortedCompanies);
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+      }
+    };
+
+    fetchCompaniesWithReviews();
+  }, [userLocation]); // Add userLocation as dependency
+
+  useEffect(() => {
+    const fetchUserLocation = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        
+        if (data.country === 'NO') { // Only process if user is in Norway
+          setUserLocation({
+            city: data.city,
+            postal: data.postal,
+            region: data.region,
+            country: data.country
+          });
+
+          // Auto-filter companies based on location
+          const nearbyCompanies = getAccountingFirms()
+            .filter(company => {
+              // First prioritize exact postal code match
+              if (company.forretningsadresse?.postnummer === data.postal) {
+                return true;
+              }
+              
+              // Then check if company is in same city
+              if (company.forretningsadresse?.kommune.toLowerCase() === data.city.toLowerCase()) {
+                return true;
+              }
+              
+              // Finally check if company is in same region
+              return company.forretningsadresse?.kommune.toLowerCase().includes(data.region.toLowerCase());
+            })
+            .slice(0, MAX_ITEMS)
+            .map(company => ({
+              ...company,
+              reviewScore: 0,
+              reviewCount: 0,
+              reviews: {
+                averageRating: 0,
+                totalReviews: 0
+              }
+            }));
+
+          setFilteredCompanies(nearbyCompanies);
+        }
+      } catch (error) {
+        console.error('Error fetching location:', error);
+      }
+    };
+
+    fetchUserLocation();
+  }, []); // Run once on mount
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
     setCurrentPage(1);
     
-    // Only filter companies if it's not a postal code search
-    // (postal code searches are handled in SearchBar component)
     if (!/^\d{4}$/.test(term)) {
       const filtered = getAccountingFirms()
         .filter(company =>
           company.navn.toLowerCase().includes(term.toLowerCase()) ||
           company.forretningsadresse?.kommune.toLowerCase().includes(term.toLowerCase())
         )
-        .slice(0, MAX_ITEMS);
+        .slice(0, MAX_ITEMS)
+        .map(company => ({
+          ...company,
+          reviewScore: 0,
+          reviewCount: 0,
+          reviews: {
+            averageRating: 0,
+            totalReviews: 0
+          }
+        }));
       setFilteredCompanies(filtered);
     }
   };
@@ -166,54 +325,6 @@ const Index = () => {
   const totalPages = Math.min(Math.ceil(filteredCompanies.length / ITEMS_PER_PAGE), 2);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedCompanies = filteredCompanies.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  const handleSubmitForm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const webhookUrl = 'https://hook.eu1.make.com/qr6ty7qwlyziu9mrnq982sjcx3odv1s3';
-      const webhookData = {
-        city: 'Homepage Form',
-        ...formData,
-        date: new Date().toISOString()
-      };
-
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(webhookData)
-      });
-
-      if (!response.ok) throw new Error('Failed to submit form');
-
-      toast({
-        title: "Forespørsel sendt!",
-        description: "Vi tar kontakt med deg innen 24 timer.",
-      });
-
-      // Reset form
-      setFormData({
-        companyName: '',
-        postnumber: '',
-        email: '',
-        phone: '',
-        acceptTerms: false
-      });
-      setMunicipality(null);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast({
-        title: "Feil",
-        description: "Kunne ikke sende forespørsel. Prøv igjen senere.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   useEffect(() => {
     const fetchRecentArticles = async () => {
@@ -233,6 +344,20 @@ const Index = () => {
 
     fetchRecentArticles();
   }, []);
+
+  const handleFilter = (filtered: Company[]) => {
+    // Transform regular companies into CompanyWithReviews
+    const companiesWithReviews = filtered.map(company => ({
+      ...company,
+      reviewScore: 0,
+      reviewCount: 0,
+      reviews: {
+        averageRating: 0,
+        totalReviews: 0
+      }
+    }));
+    setFilteredCompanies(companiesWithReviews);
+  };
 
   return (
     <>
@@ -263,133 +388,32 @@ const Index = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
               <div className="text-white lg:col-span-7 lg:pr-16">
                 <h1 className="text-4xl font-bold mb-4">
-                  Finn din regnskapsfører
+                  {userLocation ? (
+                    `Finn regnskapsfører i ${userLocation.city}`
+                  ) : (
+                    'Finn din regnskapsfører'
+                  )}
                 </h1>
                 <p className="text-lg opacity-90 mb-8">
-                  Vi hjelper deg med å finne den beste regnskapsføreren for din bedrift
+                  {userLocation ? (
+                    `Vi har funnet ${filteredCompanies.length} regnskapsførere i nærheten av ${userLocation.city}`
+                  ) : (
+                    'Vi hjelper deg med å finne den beste regnskapsføreren for din bedrift'
+                  )}
                 </p>
                 
-                <div className="bg-white/95 p-6 rounded-lg shadow-lg backdrop-blur-sm">
-                  <SearchBar 
-                    onSearch={handleSearch} 
-                    className="mb-4" 
-                    inputClassName="bg-white border-2 border-gray-200 text-lg py-3 text-gray-900 placeholder-gray-500"
-                    dropdownClassName="bg-white border border-gray-200 shadow-xl max-h-[300px] overflow-y-auto z-50"
-                    optionClassName="hover:bg-blue-50 px-4 py-2 cursor-pointer text-gray-900"
-                    selectClassName="text-gray-900 bg-white"
-                  />
-                </div>
+                <SearchBar 
+                  onSearch={handleSearch} 
+                  className="mb-4" 
+                  inputClassName="bg-white/95 border-0 text-lg py-3 text-gray-900 placeholder-gray-500"
+                  dropdownClassName="bg-white/95 border-0 shadow-xl max-h-[300px] overflow-y-auto z-50"
+                  optionClassName="hover:bg-blue-50 px-4 py-2 cursor-pointer text-gray-900"
+                  selectClassName="text-gray-900 bg-white/95 border-0 rounded-lg"
+                />
               </div>
 
               <div className="lg:col-span-5">
-                <div className="bg-white p-6 rounded-lg shadow-lg">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                    Få gratis tilbud fra regnskapsførere
-                  </h2>
-                  <form className="space-y-4" onSubmit={handleSubmitForm}>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Bedriftsnavn
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.companyName}
-                        onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Ditt firma AS"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Postnummer
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={formData.postnumber}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-                            setFormData(prev => ({ ...prev, postnumber: value }));
-                            if (value.length === 4) {
-                              const found = findMunicipalityByPostalCode(value);
-                              setMunicipality(found);
-                            } else {
-                              setMunicipality(null);
-                            }
-                          }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="1234"
-                          maxLength={4}
-                          pattern="[0-9]{4}"
-                          required
-                        />
-                        {municipality && (
-                          <div className="absolute right-0 top-0 h-full flex items-center pr-3">
-                            <div className="flex items-center gap-1 text-emerald-600">
-                              <Check className="w-4 h-4" />
-                              <span className="text-sm font-medium">{municipality}</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        E-post
-                      </label>
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="din@epost.no"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Telefon
-                      </label>
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Din telefon"
-                        required
-                      />
-                    </div>
-
-                    <div className="flex items-start gap-2">
-                      <input
-                        type="checkbox"
-                        id="terms"
-                        checked={formData.acceptTerms}
-                        onChange={(e) => setFormData(prev => ({ ...prev, acceptTerms: e.target.checked }))}
-                        className="mt-1"
-                        required
-                      />
-                      <label htmlFor="terms" className="text-sm text-gray-700">
-                        Jeg godtar vilkårene til tjenesten
-                      </label>
-                    </div>
-
-                    <Button 
-                      className="w-full bg-blue-600 hover:bg-blue-700" 
-                      type="submit" 
-                      disabled={isSubmitting || !formData.acceptTerms}
-                    >
-                      {isSubmitting ? "Sender..." : "Få tilbud"}
-                    </Button>
-                    <p className="text-center text-sm text-gray-500">
-                      Tjenesten er gratis og helt uforpliktende!
-                    </p>
-                  </form>
-                </div>
+                <RequestOfferForm />
               </div>
             </div>
           </div>
@@ -400,7 +424,7 @@ const Index = () => {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <FilterSection 
-                  onFilter={setFilteredCompanies} 
+                  onFilter={handleFilter}
                   accountants={getAccountingFirms()}
                 />
               </div>
@@ -409,7 +433,10 @@ const Index = () => {
             <div className="lg:col-span-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {paginatedCompanies.map((company) => (
-                  <CompanyCard key={company.organisasjonsnummer} company={company} />
+                  <CompanyCard 
+                    key={company.organisasjonsnummer} 
+                    company={company as CompanyWithReviews} 
+                  />
                 ))}
               </div>
 

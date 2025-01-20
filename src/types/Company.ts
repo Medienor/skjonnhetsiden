@@ -62,6 +62,7 @@ export interface Company {
   registreringsdatoAntallAnsatteEnhetsregisteret?: string;
   registreringsdatoAntallAnsatteNAVAaregisteret?: string;
   telefon?: string;
+  kommune: string;
   mobil?: string;
   hjemmeside?: string;
   // Add new properties for reviews

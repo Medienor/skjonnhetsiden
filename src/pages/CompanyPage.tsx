@@ -21,6 +21,7 @@ import { convertCompanyToAccountant, convertCompaniesToAccountants } from "@/uti
 import { Helmet } from "react-helmet-async";
 import { supabase } from '../utils/supabase';
 import { findMunicipalityByPostalCode } from '@/utils/postalCodeUtils';
+import { RequestOfferForm } from "@/components/RequestOfferForm";
 
 interface ReviewsResponse {
   reviews: Review[];
@@ -382,120 +383,8 @@ const CompanyPage = () => {
 
             {/* Form section - 30% */}
             <div className="lg:col-span-4">
-              <div className="bg-gradient-to-br from-blue-50 to-white p-8 rounded-lg shadow-xl border-2 border-blue-100 sticky top-4">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-blue-900 mb-2">
-                    Få tilbud fra inntil 3 regnskapsførere!
-                  </h2>
-                  <p className="text-blue-700">
-                    Gratis og uforpliktende sammenligning av priser
-                  </p>
-                </div>
-                
-                <form className="space-y-4" onSubmit={handleSubmitForm}>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                      Bedriftsnavn
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.companyName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Ditt firma AS"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                      Postnummer
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={formData.postnumber}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-                          setFormData(prev => ({ ...prev, postnumber: value }));
-                          
-                          if (value.length === 4) {
-                            const found = findMunicipalityByPostalCode(value);
-                            setMunicipality(found);
-                          } else {
-                            setMunicipality(null);
-                          }
-                        }}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="1234"
-                        maxLength={4}
-                        pattern="[0-9]{4}"
-                        required
-                      />
-                      {municipality && (
-                        <div className="absolute right-0 top-0 h-full flex items-center pr-3">
-                          <div className="flex items-center gap-1 text-emerald-600">
-                            <Check className="w-4 h-4" />
-                            <span className="text-sm font-medium">{municipality}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                      E-post
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="din@epost.no"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                      Telefon
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Din telefon"
-                      required
-                    />
-                  </div>
-                  <div className="flex items-start gap-2 bg-blue-50 p-3 rounded-md">
-                    <input
-                      type="checkbox"
-                      id="terms"
-                      checked={formData.acceptTerms}
-                      onChange={(e) => setFormData(prev => ({ ...prev, acceptTerms: e.target.checked }))}
-                      className="mt-1"
-                      required
-                    />
-                    <label htmlFor="terms" className="text-sm text-gray-700">
-                      Jeg godtar vilkårene til tjenesten
-                    </label>
-                  </div>
-                  <Button 
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6" 
-                    type="submit" 
-                    disabled={isSubmitting || !formData.acceptTerms}
-                  >
-                    {isSubmitting ? "Sender..." : "Få tilbud nå"}
-                  </Button>
-                  <div className="text-center space-y-2 mt-4">
-                    <p className="text-sm font-medium text-gray-600">
-                      ✓ 100% gratis og uforpliktende
-                    </p>
-                    <p className="text-sm font-medium text-gray-600">
-                      ✓ Svar innen 24 timer
-                    </p>
-                  </div>
-                </form>
+              <div className="sticky top-4">
+                <RequestOfferForm />
               </div>
             </div>
           </div>

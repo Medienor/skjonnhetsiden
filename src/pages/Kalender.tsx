@@ -402,8 +402,8 @@ const Kalender = () => {
 
         {/* Calendar Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* View Toggle */}
-          <div className="flex justify-between items-center mb-8">
+          {/* View Toggle and Title Section */}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
             <h2 className="text-2xl font-semibold text-blue-900">
               Viktige frister og datoer
             </h2>
@@ -411,7 +411,7 @@ const Kalender = () => {
               <Button
                 variant={view === 'list' ? 'default' : 'outline'}
                 onClick={() => setView('list')}
-                className="flex items-center gap-2"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2"
               >
                 <List className="h-4 w-4" />
                 Liste
@@ -419,7 +419,7 @@ const Kalender = () => {
               <Button
                 variant={view === 'calendar' ? 'default' : 'outline'}
                 onClick={() => setView('calendar')}
-                className="flex items-center gap-2"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2"
               >
                 <CalendarIcon className="h-4 w-4" />
                 Kalender
@@ -428,7 +428,7 @@ const Kalender = () => {
           </div>
 
           {view === 'calendar' ? (
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {monthNames.map((month, index) => {
                 const monthNumber = index + 1;
                 const isCurrentMonth = monthNumber === currentMonth;
@@ -449,7 +449,7 @@ const Kalender = () => {
                         </span>
                       </div>
                     )}
-                    <CardContent className="p-6">
+                    <CardContent className="p-4 sm:p-6">
                       <div className="flex justify-between items-center">
                         <h3 className={`text-xl font-semibold ${isCurrentMonth ? 'text-blue-600' : 'text-blue-900'}`}>
                           {month}

@@ -8,7 +8,7 @@ import {
   getAllMunicipalities 
 } from "@/utils/municipalityData";
 import { getCompaniesByLocation } from '@/utils/companyData';
-import { MapPin, Search, ChevronDown } from "lucide-react";
+import { MapPin, Search, ChevronDown, Check } from "lucide-react";
 
 interface SearchBarProps {
   onSearch: (term: string) => void;
@@ -28,6 +28,7 @@ export const SearchBar = ({
   selectClassName = ''
 }: SearchBarProps) => {
   const [postalCode, setPostalCode] = useState("");
+  const [municipality, setMunicipality] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMunicipality, setSelectedMunicipality] = useState("");
@@ -82,9 +83,10 @@ export const SearchBar = ({
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className={`flex flex-col sm:flex-row items-center gap-4 ${className}`}>
-      <div className="relative flex items-center w-full sm:w-auto">
-        <div className="relative">
+    <div className={`flex flex-col w-full max-w-[600px] mx-auto gap-3 ${className}`}>
+      {/* Search by postal code section */}
+      <div className="relative flex flex-col sm:flex-row w-full gap-2">
+        <div className="relative flex-1">
           <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             type="text"
@@ -94,26 +96,46 @@ export const SearchBar = ({
               const value = e.target.value.replace(/\D/g, '');
               if (value.length <= 4) {
                 setPostalCode(value);
+                if (value.length === 4) {
+                  const found = findMunicipalityByPostalCode(value);
+                  setMunicipality(found);
+                } else {
+                  setMunicipality(null);
+                }
               }
             }}
-            className={`pl-9 w-[200px] h-10 border border-gray-200 rounded-lg ${inputClassName}`}
+            className={`pl-9 w-full h-11 bg-white/90 shadow-lg backdrop-blur-sm ${inputClassName}`}
             maxLength={4}
           />
+          {municipality && (
+            <div className="absolute right-0 top-0 h-full flex items-center pr-3">
+              <div className="flex items-center gap-1 text-emerald-600">
+                <Check className="w-4 h-4" />
+                <span className="text-sm font-medium">{municipality}</span>
+              </div>
+            </div>
+          )}
         </div>
         <Button 
           onClick={handlePostalSearch}
-          className="ml-2 h-10 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="h-11 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 w-full sm:w-auto shadow-lg"
         >
           Søk
         </Button>
       </div>
 
-      <span className="text-sm text-gray-500">eller</span>
+      {/* Divider with larger text */}
+      <div className="flex items-center gap-4">
+        <div className="flex-1 h-px bg-white/20"></div>
+        <span className="text-xl text-white whitespace-nowrap font-medium">eller</span>
+        <div className="flex-1 h-px bg-white/20"></div>
+      </div>
 
-      <div className="relative w-full sm:w-auto" ref={dropdownRef}>
+      {/* Municipality dropdown section */}
+      <div className="relative w-full" ref={dropdownRef}>
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="flex items-center justify-between w-[200px] h-10 px-3 border border-gray-200 rounded-lg bg-white hover:border-gray-300"
+          className={`flex items-center justify-between w-full h-11 px-4 bg-white/90 shadow-lg backdrop-blur-sm rounded-lg hover:bg-white/95 ${selectClassName}`}
         >
           <span className="text-gray-700">
             {selectedMunicipality || "Velg kommune"}
@@ -122,16 +144,16 @@ export const SearchBar = ({
         </button>
 
         {isDropdownOpen && (
-          <div className={`absolute z-10 w-[200px] mt-1 bg-white border border-gray-200 rounded-lg shadow-lg ${dropdownClassName}`}>
-            <div className="p-2 border-b border-gray-100">
+          <div className={`absolute z-10 w-full mt-1 bg-white rounded-lg shadow-xl ${dropdownClassName}`}>
+            <div className="p-3 border-b border-gray-100">
               <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Søk etter kommune..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full pl-8 pr-2 py-1 text-sm border border-gray-200 rounded ${optionClassName}`}
+                  className={`w-full pl-9 pr-3 py-2 text-sm bg-transparent ${optionClassName}`}
                 />
               </div>
             </div>

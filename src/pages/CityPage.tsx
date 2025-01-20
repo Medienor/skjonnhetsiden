@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Star, Building2, Search, Info, Check, ChevronRight } from "lucide-react";
 import { FilterSection } from "@/components/FilterSection";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { CityLinks } from "@/components/CityLinks";
 import { RecentArticles } from "@/components/RecentArticles";
@@ -22,6 +22,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { findMunicipalityByPostalCode } from '@/utils/postalCodeUtils';
 import { AccountantsMap } from '@/components/AccountantsMap';
 import { convertCompaniesToAccountants } from "@/utils/accountantConverter";
+import { RequestOfferForm } from "@/components/RequestOfferForm";
 
 type CompanyWithReviews = Company & {
   reviewScore: number;
@@ -202,6 +203,9 @@ const CityPage = () => {
   const { toast } = useToast();
   const [municipality, setMunicipality] = useState<string | null>(null);
   const [initialCompanies, setInitialCompanies] = useState<Company[]>([]);
+  const [isFilterSticky, setIsFilterSticky] = useState(false);
+  const companiesListRef = useRef<HTMLDivElement>(null);
+  const filterSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (city) {
@@ -424,6 +428,26 @@ const CityPage = () => {
     });
   }, [filteredCompanies]);
 
+  // Add scroll event listener
+  useEffect(() => {
+    const handleScroll = () => {
+      if (companiesListRef.current && filterSectionRef.current) {
+        const companiesRect = companiesListRef.current.getBoundingClientRect();
+        const filterRect = filterSectionRef.current.getBoundingClientRect();
+        
+        // Check if we've scrolled past the original filter position
+        const hasScrolledPastFilter = filterRect.top <= 0;
+        // Check if companies list is still in view
+        const isCompaniesVisible = companiesRect.top < window.innerHeight && companiesRect.bottom > 0;
+        
+        setIsFilterSticky(hasScrolledPastFilter && isCompaniesVisible);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   if (!city) {
     return <div>By ikke funnet</div>;
   }
@@ -485,7 +509,7 @@ const CityPage = () => {
                 <h1 className="text-4xl font-bold mb-4">
                   Regnskapsfører {originalCityName}: Anbefalte bedrifter i {new Date().getFullYear()}
                 </h1>
-                <p className="text-lg opacity-90 mb-4">
+                <p className="text-lg opacity-90 mb-4 hidden md:block">
                   Ikke gå glipp av de beste regnskapsførerne i {originalCityName}! 
                   Vi har samlet alle autoriserte regnskapsførere i området på ett sted, 
                   slik at du enkelt kan sammenligne tjenester og priser.
@@ -503,109 +527,7 @@ const CityPage = () => {
 
               {/* Right Column - narrower */}
               <div className="lg:col-span-5">
-                <div className="bg-white p-6 rounded-lg shadow-lg">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                    Få tilbud og kataloger fra flere regnskapsførere!
-                  </h2>
-                  <form className="space-y-4" onSubmit={handleSubmitForm}>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Bedriftsnavn
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.companyName}
-                        onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Ditt firma AS"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Postnummer
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={formData.postnumber}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-                            setFormData(prev => ({ ...prev, postnumber: value }));
-                            if (value.length === 4) {
-                              const found = findMunicipalityByPostalCode(value);
-                              setMunicipality(found);
-                            } else {
-                              setMunicipality(null);
-                            }
-                          }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="1234"
-                          maxLength={4}
-                          pattern="[0-9]{4}"
-                          required
-                        />
-                        {municipality && (
-                          <div className="absolute right-0 top-0 h-full flex items-center pr-3">
-                            <div className="flex items-center gap-1 text-emerald-600">
-                              <Check className="w-4 h-4" />
-                              <span className="text-sm font-medium">{municipality}</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        E-post
-                      </label>
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="din@epost.no"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Telefon
-                      </label>
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Din telefon"
-                        required
-                      />
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <input
-                        type="checkbox"
-                        id="terms"
-                        checked={formData.acceptTerms}
-                        onChange={(e) => setFormData(prev => ({ ...prev, acceptTerms: e.target.checked }))}
-                        className="mt-1"
-                        required
-                      />
-                      <label htmlFor="terms" className="text-sm text-gray-700">
-                        Jeg godtar vilkårene til tjenesten
-                      </label>
-                    </div>
-                    <Button 
-                      className="w-full bg-blue-600 hover:bg-blue-700" 
-                      type="submit" 
-                      disabled={isSubmitting || !formData.acceptTerms}
-                    >
-                      {isSubmitting ? "Sender..." : "Få tilbud"}
-                    </Button>
-                    <p className="text-center text-sm text-gray-500">
-                      Tjenesten er gratis og helt uforpliktende!
-                    </p>
-                  </form>
-                </div>
+                <RequestOfferForm />
               </div>
             </div>
           </div>
@@ -639,23 +561,24 @@ const CityPage = () => {
           </div>
           
           {/* Grid layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-16">
-            <div className="lg:col-span-1">
-              <FilterSection 
-                onFilter={(filteredResults) => {
-                  console.log('Filter triggered with results:', {
-                    isArray: Array.isArray(filteredResults),
-                    length: filteredResults?.length,
-                    results: filteredResults
-                  });
-                  
-                  if (Array.isArray(filteredResults)) {
-                    console.log('Setting companies to:', filteredResults.length);
-                    setCompanies(filteredResults);
-                  }
-                }}
-                accountants={initialCompanies}
-              />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-16" ref={companiesListRef}>
+            <div className="lg:col-span-1" ref={filterSectionRef}>
+              <div className={`
+                lg:block
+                ${isFilterSticky ? 
+                  'fixed top-0 left-0 right-0 z-50 p-4 bg-white shadow-lg lg:relative lg:p-0 lg:shadow-none lg:bg-transparent' : 
+                  'relative'
+                }
+              `}>
+                <FilterSection 
+                  onFilter={(filteredResults) => {
+                    if (Array.isArray(filteredResults)) {
+                      setCompanies(filteredResults);
+                    }
+                  }}
+                  accountants={initialCompanies}
+                />
+              </div>
             </div>
             
             <div className="lg:col-span-3">

@@ -21,6 +21,7 @@ import Tool from "./pages/Tool";
 import QuestionsPage from "./pages/sporsmal/index";
 import QuestionPage from "./pages/sporsmal/[slug]";
 import SamarbeidPage from "./pages/samarbeid";
+import { OfferBar } from '@/components/OfferBar';
 
 const queryClient = new QueryClient();
 
@@ -109,6 +110,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <RouterProvider router={router} />
+            <OfferBar />
           </div>
         </div>
       </TooltipProvider>
