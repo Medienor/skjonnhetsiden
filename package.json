@@ -4,14 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/generateSitemap.js && vite",
+    "dev": "vite",
     "frontend": "vite",
-    "build": "node scripts/generateSitemap.js && tsc && vite build",
+    "build": "tsc && vite build && node scripts/generateSitemap.js",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
     "server": "tsx src/server/index.ts",
-    "generate-sitemap": "node scripts/generateSitemap.js"
+    "sitemap": "node scripts/generateSitemap.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

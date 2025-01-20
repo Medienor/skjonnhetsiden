@@ -151,20 +151,8 @@ const Contact = () => {
               <h2 className="text-2xl font-semibold text-blue-800 mb-4">Kontaktinformasjon</h2>
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-blue-700 mb-2">Adresse</h3>
-                  <p className="text-gray-600">
-                    Karl Johans gate 25<br />
-                    0159 Oslo<br />
-                    Norge
-                  </p>
-                </div>
-                <div>
                   <h3 className="text-lg font-semibold text-blue-700 mb-2">E-post</h3>
-                  <p className="text-gray-600">kontakt@regnskapsforer.no</p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-blue-700 mb-2">Telefon</h3>
-                  <p className="text-gray-600">+47 22 33 44 55</p>
+                  <p className="text-gray-600">support@netsure.ai</p>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-blue-700 mb-2">Åpningstider</h3>

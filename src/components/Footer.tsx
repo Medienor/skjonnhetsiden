@@ -16,9 +16,13 @@ const Footer = () => {
           {/* Column 1: Logo */}
           <div>
             <h3 className="text-lg font-semibold text-blue-900 mb-4">Regnskapsførerlisten.no</h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-4">
               Din guide til å finne den beste regnskapsføreren for din bedrift
             </p>
+            <div className="text-sm text-gray-500">
+              <p>Eies av Netsure AS</p>
+              <p>Org.nr: 834 762 102</p>
+            </div>
           </div>
 
           {/* Column 2: Om Oss */}

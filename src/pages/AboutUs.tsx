@@ -19,14 +19,14 @@ const AboutUs = () => {
       </Helmet>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl font-bold text-blue-900 mb-8">Om Regnskapsfører.no</h1>
+        <h1 className="text-4xl font-bold text-blue-900 mb-8">Om Regnskapsførerlisten.no</h1>
         
         <div className="grid gap-8">
           <Card>
             <CardContent className="p-6">
               <h2 className="text-2xl font-semibold text-blue-800 mb-4">Vår Historie</h2>
               <p className="text-gray-600 mb-4">
-                Regnskapsfører.no ble etablert med en klar visjon: å forenkle prosessen med å finne den perfekte regnskapsføreren for norske bedrifter. Vi forstår at valg av regnskapsfører er en viktig beslutning som kan ha stor innvirkning på din bedrifts suksess.
+                Regnskapsførerlisten.no ble etablert med en klar visjon: å forenkle prosessen med å finne den perfekte regnskapsføreren for norske bedrifter. Vi forstår at valg av regnskapsfører er en viktig beslutning som kan ha stor innvirkning på din bedrifts suksess.
               </p>
             </CardContent>
           </Card>

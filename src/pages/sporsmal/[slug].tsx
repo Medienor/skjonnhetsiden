@@ -146,9 +146,9 @@ const QuestionPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
               {/* Left Column - Content */}
               <div className="text-white lg:col-span-7 lg:pr-16">
-                <h1 className="text-4xl font-bold mb-4">
+                <h2 className="text-4xl font-bold mb-4">
                   {guide.title}
-                </h1>
+                </h2>
                 <p className="text-lg opacity-90">
                   Få svar på dine spørsmål om regnskap og økonomistyring
                 </p>
@@ -352,7 +352,12 @@ const QuestionPage = () => {
                     border-radius: 0.5rem;
                   }
                 `}</style>
-                <div dangerouslySetInnerHTML={{ __html: guide.content }} />
+                <div dangerouslySetInnerHTML={{ 
+                  __html: guide.content.replace(
+                    /<h1>(.*?)<\/h1>/,
+                    '<h2>$1</h2>'
+                  )
+                }} />
 
                 {/* Read More Section */}
                 <div className="mt-12 space-y-6">

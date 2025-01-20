@@ -26,7 +26,7 @@ const Privacy = () => {
             <CardContent className="p-6">
               <h2 className="text-2xl font-semibold text-blue-800 mb-4">Innsamling av personopplysninger</h2>
               <p className="text-gray-600 mb-4">
-                Regnskapsfører.no samler inn og behandler personopplysninger i samsvar med gjeldende personvernlovgivning. Vi tar ditt personvern på alvor og er forpliktet til å beskytte dine personopplysninger.
+                Regnskapsførerlisten.no samler inn og behandler personopplysninger i samsvar med gjeldende personvernlovgivning. Vi tar ditt personvern på alvor og er forpliktet til å beskytte dine personopplysninger.
               </p>
               <p className="text-gray-600">
                 Vi samler inn følgende typer personopplysninger:
@@ -87,8 +87,7 @@ const Privacy = () => {
                 Har du spørsmål om vår behandling av personopplysninger eller ønsker å utøve dine rettigheter? Kontakt oss på:
               </p>
               <div className="mt-4 text-gray-600">
-                <p>E-post: personvern@regnskapsforer.no</p>
-                <p>Telefon: +47 22 33 44 55</p>
+                <p>E-post: support@netsure.ai</p>
               </div>
             </CardContent>
           </Card>

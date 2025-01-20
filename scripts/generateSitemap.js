@@ -37,20 +37,12 @@ function normalizeCompanyName(name) {
     .replace(/^-+|-+$/g, '');
 }
 
-// Read municipalities and companies
+// Read municipalities
 const municipalitiesJson = JSON.parse(
   readFileSync(join(__dirname, '../src/data/municipalities.json'), 'utf8')
 );
-const companyJson = JSON.parse(
-  readFileSync(join(__dirname, '../src/data/company.json'), 'utf8')
-);
 
-// Filter accounting companies (assuming you have a way to identify them)
-const accountingCompanies = companyJson.filter(company => 
-  company.naeringskode1?.kode === "69.201"
-);
-
-// Add Supabase client initialization with loaded env variables
+// Add Supabase client initialization
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL || '',
   process.env.VITE_SUPABASE_ANON_KEY || ''
@@ -65,27 +57,20 @@ const { data: guides } = await supabase
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>http://localhost:8087/</loc>
+    <loc>https://regnskapsførerlisten.no/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   ${municipalitiesJson.map(municipality => `
   <url>
-    <loc>http://localhost:8087/${normalizeMunicipalityName(municipality.name)}</loc>
+    <loc>https://regnskapsførerlisten.no/${normalizeMunicipalityName(municipality.name)}</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   `).join('')}
-  ${accountingCompanies.map(company => `
-  <url>
-    <loc>http://localhost:8087/regnskapsforer/${normalizeCompanyName(company.navn)}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  `).join('')}
   ${guides.map(guide => `
   <url>
-    <loc>http://localhost:8087/sporsmal/${guide.slug}</loc>
+    <loc>https://regnskapsførerlisten.no/sporsmal/${guide.slug}</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
