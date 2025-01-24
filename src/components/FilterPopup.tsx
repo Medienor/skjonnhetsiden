@@ -8,7 +8,7 @@ interface FilterPopupProps {
   isOpen: boolean;
   onClose: () => void;
   onFilter: (results: Company[]) => void;
-  accountants: Company[];
+  companies: Company[];
   filteredCount: number;
 }
 
@@ -16,35 +16,35 @@ export const FilterPopup = ({
   isOpen,
   onClose,
   onFilter,
-  accountants,
+  companies,
   filteredCount
 }: FilterPopupProps) => {
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedTreatments, setSelectedTreatments] = useState<string[]>([]);
 
-  const services = [
-    "Regnskap",
-    "Lønn",
-    "Fakturering",
-    "Årsoppgjør",
-    "Rådgivning",
-    "Bokføring"
+  const treatments = [
+    "Botox",
+    "Fillers",
+    "Ansiktsbehandling",
+    "Laser",
+    "Hudpleie",
+    "Massasje"
   ];
 
-  const handleServiceChange = (service: string) => {
-    const updatedServices = selectedServices.includes(service)
-      ? selectedServices.filter(s => s !== service)
-      : [...selectedServices, service];
+  const handleTreatmentChange = (treatment: string) => {
+    const updatedTreatments = selectedTreatments.includes(treatment)
+      ? selectedTreatments.filter(t => t !== treatment)
+      : [...selectedTreatments, treatment];
 
-    setSelectedServices(updatedServices);
+    setSelectedTreatments(updatedTreatments);
 
     // Filter companies immediately
-    if (updatedServices.length === 0) {
-      onFilter(accountants);
+    if (updatedTreatments.length === 0) {
+      onFilter(companies);
     } else {
-      const filtered = accountants.filter(company => 
-        company.aktivitet?.some(activity =>
-          updatedServices.some(service =>
-            activity.toLowerCase().includes(service.toLowerCase())
+      const filtered = companies.filter(company => 
+        company.treatments?.some(treatment =>
+          updatedTreatments.some(selectedTreatment =>
+            treatment.name.toLowerCase().includes(selectedTreatment.toLowerCase())
           )
         )
       );
@@ -66,20 +66,20 @@ export const FilterPopup = ({
         
         <div className="p-4">
           <div className="space-y-4">
-            <h3 className="font-medium">Tjenester</h3>
+            <h3 className="font-medium">Behandlinger</h3>
             <div className="space-y-2">
-              {services.map((service) => (
-                <div key={service} className="flex items-center space-x-2">
+              {treatments.map((treatment) => (
+                <div key={treatment} className="flex items-center space-x-2">
                   <Checkbox
-                    id={service}
-                    checked={selectedServices.includes(service)}
-                    onCheckedChange={() => handleServiceChange(service)}
+                    id={treatment}
+                    checked={selectedTreatments.includes(treatment)}
+                    onCheckedChange={() => handleTreatmentChange(treatment)}
                   />
                   <label 
-                    htmlFor={service} 
+                    htmlFor={treatment} 
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    {service}
+                    {treatment}
                   </label>
                 </div>
               ))}
@@ -92,7 +92,7 @@ export const FilterPopup = ({
             onClick={onClose}
             className="w-full"
           >
-            Se {filteredCount} regnskapsførere
+            Se {filteredCount} klinikker
           </Button>
         </div>
       </div>

@@ -1,14 +1,8 @@
-import { useState, useRef, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useState, useRef } from "react";
+import { Search, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { 
-  findMunicipalityByPostalCode, 
-  normalizeMunicipalityName,
-  getAllMunicipalities 
-} from "@/utils/municipalityData";
-import { getCompaniesByLocation } from '@/utils/companyData';
-import { MapPin, Search, ChevronDown, Check } from "lucide-react";
+import { findMunicipalityByPostalCode, denormalizeMunicipalityName } from "@/utils/municipalityData";
+import { Button } from "./ui/button";
 
 interface SearchBarProps {
   onSearch: (term: string) => void;
@@ -19,164 +13,89 @@ interface SearchBarProps {
   selectClassName?: string;
 }
 
-export const SearchBar = ({ 
-  onSearch, 
+export const SearchBar = ({
+  onSearch,
   className = '',
   inputClassName = '',
   dropdownClassName = '',
   optionClassName = '',
   selectClassName = ''
 }: SearchBarProps) => {
-  const [postalCode, setPostalCode] = useState("");
-  const [municipality, setMunicipality] = useState<string | null>(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedMunicipality, setSelectedMunicipality] = useState("");
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [municipality, setMunicipality] = useState<string | null>(null);
+  const [isPostalCode, setIsPostalCode] = useState(false);
   const navigate = useNavigate();
-  const municipalities = getAllMunicipalities();
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handlePostalSearch = (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!postalCode.trim()) return;
+    if (!searchTerm) return;
 
-    if (/^\d{4}$/.test(postalCode)) {
-      const municipality = findMunicipalityByPostalCode(postalCode);
-      
-      if (municipality) {
-        const companies = getCompaniesByLocation(postalCode);
-        console.log(`Found ${companies.length} companies in ${municipality}`);
-        
-        if (companies.length > 0) {
-          // Take only the first part before any separator and convert to lowercase
-          const normalizedName = municipality.split(/[-\s]+/)[0].toLowerCase();
-          navigate(`/${normalizedName}`);
-        }
-      }
+    if (isPostalCode && municipality) {
+      navigate(`/${municipality.toLowerCase()}`);
+    } else {
+      navigate(`/${searchTerm.toLowerCase()}`);
     }
   };
 
-  const handleMunicipalitySelect = (municipality: string) => {
-    setSelectedMunicipality(municipality);
-    setIsDropdownOpen(false);
-    const normalizedName = normalizeMunicipalityName(municipality);
-    navigate(`/${normalizedName}`);
+  const handleInputChange = (value: string) => {
+    setSearchTerm(value);
+    
+    // Check if input is a postal code (4 digits)
+    const isPostal = /^\d{4}$/.test(value);
+    setIsPostalCode(isPostal);
+
+    if (isPostal) {
+      const found = findMunicipalityByPostalCode(value);
+      setMunicipality(found ? found.name : null);
+    } else {
+      setMunicipality(null);
+    }
   };
 
-  const filteredMunicipalities = municipalities
-    .filter(m => 
-      m.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
-
   return (
-    <div className={`flex flex-col w-full max-w-[600px] mx-auto gap-3 ${className}`}>
-      {/* Search by postal code section */}
-      <div className="relative flex flex-col sm:flex-row w-full gap-2">
+    <form onSubmit={handleSearch} className={`w-full max-w-xl mx-auto ${className}`}>
+      <div className="flex gap-2">
         <div className="relative flex-1">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
+          <input
+            ref={inputRef}
             type="text"
-            placeholder="Søk på postnummer..."
-            value={postalCode}
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, '');
-              if (value.length <= 4) {
-                setPostalCode(value);
-                if (value.length === 4) {
-                  const found = findMunicipalityByPostalCode(value);
-                  setMunicipality(found);
-                } else {
-                  setMunicipality(null);
-                }
-              }
-            }}
-            className={`pl-9 w-full h-11 bg-white/90 shadow-lg backdrop-blur-sm ${inputClassName}`}
-            maxLength={4}
+            className={`w-full h-[55px] px-4 py-3 pl-12 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 text-gray-900 ${
+              isPostalCode
+                ? municipality
+                  ? 'border-green-500 focus:ring-green-500 pr-40'
+                  : 'border-red-300 focus:ring-red-500'
+                : 'border border-gray-200 focus:ring-blue-500'
+            } ${inputClassName}`}
+            placeholder="Søk etter by eller postnummer..."
+            value={searchTerm}
+            onChange={(e) => handleInputChange(e.target.value)}
           />
-          {municipality && (
-            <div className="absolute right-0 top-0 h-full flex items-center pr-3">
-              <div className="flex items-center gap-1 text-emerald-600">
-                <Check className="w-4 h-4" />
-                <span className="text-sm font-medium">{municipality}</span>
-              </div>
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+          
+          {isPostalCode && searchTerm.length === 4 && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center">
+              {municipality ? (
+                <div className="flex items-center text-green-600">
+                  <Check className="h-4 w-4 mr-1" />
+                  <span className="text-sm font-medium">
+                    {denormalizeMunicipalityName(municipality)}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-sm text-red-600">Ikke gyldig</span>
+              )}
             </div>
           )}
         </div>
+        
         <Button 
-          onClick={handlePostalSearch}
-          className="h-11 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 w-full sm:w-auto shadow-lg"
+          type="submit"
+          className="bg-purple-950 hover:bg-purple-900 text-white px-8 h-[55px]"
         >
           Søk
         </Button>
       </div>
-
-      {/* Divider with larger text */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1 h-px bg-white/20"></div>
-        <span className="text-xl text-white whitespace-nowrap font-medium">eller</span>
-        <div className="flex-1 h-px bg-white/20"></div>
-      </div>
-
-      {/* Municipality dropdown section */}
-      <div className="relative w-full" ref={dropdownRef}>
-        <button
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className={`flex items-center justify-between w-full h-11 px-4 bg-white/90 shadow-lg backdrop-blur-sm rounded-lg hover:bg-white/95 ${selectClassName}`}
-        >
-          <span className="text-gray-700">
-            {selectedMunicipality || "Velg kommune"}
-          </span>
-          <ChevronDown className="h-4 w-4 text-gray-400" />
-        </button>
-
-        {isDropdownOpen && (
-          <div className={`absolute z-10 w-full mt-1 bg-white rounded-lg shadow-xl ${dropdownClassName}`}>
-            <div className="p-3 border-b border-gray-100">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Søk etter kommune..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full pl-9 pr-3 py-2 text-sm bg-transparent ${optionClassName}`}
-                />
-              </div>
-            </div>
-            <div className="max-h-[300px] overflow-y-auto">
-              {filteredMunicipalities.length === 0 ? (
-                <div className="p-2 text-sm text-gray-500 text-center">
-                  Ingen kommune funnet
-                </div>
-              ) : (
-                filteredMunicipalities.map((municipality) => (
-                  <button
-                    key={municipality.number}
-                    onClick={() => handleMunicipalitySelect(municipality.name)}
-                    className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 focus:bg-gray-50 focus:outline-none ${optionClassName}`}
-                  >
-                    {municipality.name}
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+    </form>
   );
 };

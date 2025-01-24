@@ -65,13 +65,13 @@ export const OfferBar = () => {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 animate-slide-up">
       <a href="/tilbud" className="relative block">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 h-[110px] px-4 flex items-center justify-between shadow-lg">
+        <div className="bg-gradient-to-r from-purple-900 to-blue-900 h-[110px] px-4 flex items-center justify-between shadow-lg">
           <div className="flex-1">
             <h3 className="text-white text-lg font-semibold mb-1">
-              Få tilbud fra regnskapsfører
+              Få gratis pristilbud på behandling
             </h3>
-            <p className="text-blue-100 text-sm">
-              Spar tid og penger - få tilbud fra kvalifiserte regnskapsførere
+            <p className="text-purple-100 text-sm">
+              Sammenlign priser fra kvalifiserte klinikker i ditt område
             </p>
           </div>
           <button 

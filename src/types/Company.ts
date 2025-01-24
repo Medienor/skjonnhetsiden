@@ -2,7 +2,6 @@ interface Link {
   rel?: string;
   href?: string;
   type?: string;
-  // Add other potential link properties here
 }
 
 interface OrganizationForm {
@@ -26,52 +25,130 @@ interface Address {
   kommunenummer: string;
 }
 
-interface SectorCode {
-  kode: string;
-  beskrivelse: string;
+interface Location {
+  city: string;
+  address: string;
+  postalCode: string;
+  municipality: string;
+  isPrimary: boolean;
+}
+
+interface Treatment {
+  id: string;
+  name: string;
+  description?: string;
+  price?: number;
+  duration?: string;
+  category?: string;
+}
+
+interface Review {
+  rating: number;
+  comment?: string;
+  date: string;
+  verified: boolean;
+  treatmentId?: string;
+  authorName?: string;
+}
+
+interface Reviews {
+  averageRating: number;
+  totalReviews: number;
+  reviews?: Review[];
+}
+
+interface Staff {
+  id: string;
+  name: string;
+  title?: string;
+  specialties?: string[];
+  image?: string;
+  description?: string;
 }
 
 export interface Company {
+  // Basic info
   organisasjonsnummer: string;
   navn: string;
-  organisasjonsform: OrganizationForm;
-  registreringsdatoEnhetsregisteret: string;
-  registrertIMvaregisteret: boolean;
-  naeringskode1?: NaeringsKode;
-  harRegistrertAntallAnsatte: boolean;
-  forretningsadresse?: Address;
-  stiftelsesdato: string;
-  institusjonellSektorkode: SectorCode;
-  registrertIForetaksregisteret: boolean;
-  registrertIStiftelsesregisteret: boolean;
-  registrertIFrivillighetsregisteret: boolean;
-  konkurs: boolean;
-  underAvvikling: boolean;
-  underTvangsavviklingEllerTvangsopplosning: boolean;
-  maalform: string;
-  vedtektsdato?: string;
-  vedtektsfestetFormaal?: string[];
-  aktivitet?: string[];
-  registreringsdatoForetaksregisteret?: string;
-  registrertIPartiregisteret: boolean;
-  links: Link[];
-  postadresse?: Address;
-  sisteInnsendteAarsregnskap?: string;
-  registreringsdatoMerverdiavgiftsregisteret?: string;
-  registreringsdatoMerverdiavgiftsregisteretEnhetsregisteret?: string;
-  registreringsdatoAntallAnsatteEnhetsregisteret?: string;
-  registreringsdatoAntallAnsatteNAVAaregisteret?: string;
+  name: string;
+  address: string;
+  phone?: string;
+  website?: string;
+  rating?: number;
+  
+  // Contact info
   telefon?: string;
-  kommune: string;
   mobil?: string;
   hjemmeside?: string;
-  // Add new properties for reviews
+  email?: string;
+  instagram?: string;
+  facebook?: string;
+  
+  // Location info
+  forretningsadresse: {
+    land: string;
+    landkode: string;
+    postnummer: string;
+    poststed: string;
+    adresse: string[];
+    kommune: string;
+    kommunenummer: string;
+  };
+  postadresse?: Address;
+  locations?: Location[];
+  kommune: string;
+  city?: string;
+  
+  // Business details
+  naeringskode1?: NaeringsKode;
+  stiftelsesdato: string;
+  registreringsdatoEnhetsregisteret: string;
+  
+  // Beauty clinic specific
+  treatments?: Treatment[];
+  openingHours?: {
+    [key: string]: string; // e.g., "monday": "09:00-17:00"
+  };
+  specialties?: string[];
+  certifications?: string[];
+  languages?: string[];
+  staff?: Staff[];
+  paymentMethods?: string[];
+  parkingAvailable?: boolean;
+  wheelchairAccessible?: boolean;
+  
+  // Reviews and ratings
+  reviews?: Reviews;
   reviewScore?: number;
   reviewCount?: number;
+  
+  // Status flags
+  active: boolean;
+  verified: boolean;
+  featured?: boolean;
+  
+  // Registration status
+  registrertIMvaregisteret: boolean;
+  registrertIForetaksregisteret: boolean;
+  konkurs: boolean;
+  underAvvikling: boolean;
+  
+  // Additional info
+  description?: string;
+  images?: {
+    logo?: string;
+    clinic?: string[];
+    staff?: string[];
+    treatments?: string[];
+  };
+  
+  // Metadata
+  lastUpdated?: string;
+  links: Link[];
 }
 
-// You might also want to create a type for companies with reviews
 export interface CompanyWithReviews extends Company {
   reviewScore: number;
   reviewCount: number;
+  reviews: Reviews;
 } 

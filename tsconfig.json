@@ -18,7 +18,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "esModuleInterop": true,
+    "allowJs": true,
+    "types": ["node"]
   },
   "include": ["src"],
   "references": []

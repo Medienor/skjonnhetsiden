@@ -74,9 +74,18 @@ export const RecentArticles: React.FC<RecentArticlesProps> = ({ showAll = false 
               <div className="aspect-video overflow-hidden bg-gray-100">
                 {article.image_url ? (
                   <img
-                    src={article.image_url}
+                    src={`${article.image_url}?auto=format&fm=webp&w=400&q=75`}
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => {
+                      // Fallback to original URL if WebP transformation fails
+                      const target = e.target as HTMLImageElement;
+                      if (target.src !== article.image_url) {
+                        target.src = article.image_url;
+                      }
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-blue-50">
@@ -113,4 +122,4 @@ export const RecentArticles: React.FC<RecentArticlesProps> = ({ showAll = false 
       </div>
     </section>
   );
-};
+}

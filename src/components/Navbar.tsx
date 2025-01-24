@@ -8,10 +8,8 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
-import { Search, X, MapPin, Building2 } from "lucide-react";
-import { getAllMunicipalities, normalizeMunicipalityName } from "@/utils/municipalityData";
-import { useNavigate } from "react-router-dom";
-import { searchItems } from "@/utils/search";
+import { Search, X, MapPin, Syringe } from "lucide-react";
+import logo from "/logo1.svg";
 
 const topCities = [
   "Oslo",
@@ -21,50 +19,21 @@ const topCities = [
   "Drammen"
 ];
 
+const topTreatments = [
+  { title: "Botox", id: "botox" },
+  { title: "Leppefiller", id: "leppefiller" },
+  { title: "HIFU", id: "hifu" },
+  { title: "Fettfjerning", id: "fettfjerning" },
+  { title: "Hudforbedrende laserbehandlinger", id: "hudforbedrende" },
+  { title: "Ansiktsskulpturering", id: "ansiktsskulpturering" },
+  { title: "Medisinsk hudpleie", id: "medisinsk-hudpleie" },
+  { title: "Hårfjerning med laser", id: "harfjerning" },
+  { title: "Dermapen", id: "dermapen" },
+  { title: "Akne og aknearr", id: "akne" }
+];
+
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const searchRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const municipalities = getAllMunicipalities();
-  const [searchResults, setSearchResults] = useState<Awaited<ReturnType<typeof searchItems>>>([]);
-  const [isSearching, setIsSearching] = useState(false);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setIsSearchOpen(false);
-        setSearchTerm("");
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    const doSearch = async () => {
-      if (searchTerm.length >= 2) {
-        setIsSearching(true);
-        const results = await searchItems(searchTerm);
-        setSearchResults(results);
-        setIsSearching(false);
-      } else {
-        setSearchResults([]);
-      }
-    };
-
-    const timeoutId = setTimeout(doSearch, 300); // Debounce search
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
-
-  const handleMunicipalitySelect = (municipality: string) => {
-    const normalizedName = normalizeMunicipalityName(municipality);
-    setIsSearchOpen(false);
-    setSearchTerm("");
-    navigate(`/${normalizedName}`);
-  };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -72,90 +41,15 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-xl font-bold text-blue-900">
-                Regnskapsførerlisten.no
+              <Link to="/">
+                <img src={logo} alt="Skjønnhetsklinikkguiden.no" className="h-16 w-auto" />
               </Link>
             </div>
           </div>
           
           <div className="flex items-center space-x-4">
-            {/* Search icon - visible on both mobile and desktop */}
-            <div className="relative" ref={searchRef}>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-              >
-                {isSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
-              </Button>
-
-              {isSearchOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg overflow-hidden">
-                  <div className="p-2">
-                    <input
-                      type="text"
-                      placeholder="Søk etter regnskapsfører..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      autoFocus
-                    />
-                  </div>
-                  
-                  {searchTerm && (
-                    <div className="max-h-96 overflow-y-auto border-t">
-                      {isSearching ? (
-                        <div className="p-3 text-sm text-gray-500 text-center">
-                          Søker...
-                        </div>
-                      ) : searchResults.length === 0 ? (
-                        <div className="p-3 text-sm text-gray-500 text-center">
-                          Ingen resultater funnet
-                        </div>
-                      ) : (
-                        <div className="divide-y divide-gray-100">
-                          {searchResults.map((result, index) => (
-                            <Link
-                              key={`${result.type}-${index}`}
-                              to={result.url}
-                              className="flex items-start gap-3 px-4 py-2 hover:bg-gray-50"
-                              onClick={() => {
-                                setIsSearchOpen(false);
-                                setSearchTerm("");
-                              }}
-                            >
-                              {result.type === 'municipality' ? (
-                                <MapPin className="h-4 w-4 mt-1 text-gray-400" />
-                              ) : (
-                                <Building2 className="h-4 w-4 mt-1 text-gray-400" />
-                              )}
-                              <div>
-                                <div className="text-sm text-gray-700">{result.name}</div>
-                                {result.subtitle && (
-                                  <div className="text-xs text-gray-500">{result.subtitle}</div>
-                                )}
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
             {/* Desktop menu */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link to="/sporsmal" className="text-gray-600 hover:text-blue-700">
-                Spørsmål
-              </Link>
-              <Link to="/kalender" className="text-gray-600 hover:text-blue-700">
-                Kalender
-              </Link>
-              <Link to="/samarbeid" className="text-gray-600 hover:text-blue-700">
-                Samarbeid
-              </Link>
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
@@ -163,14 +57,45 @@ const Navbar = () => {
                       Byer
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
-                      <ul className="w-48 p-2">
+                      <ul className="w-56 p-2">
                         {topCities.map((city) => (
                           <li key={city}>
                             <Link
                               to={`/${city.toLowerCase()}`}
-                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
                             >
-                              Regnskapsfører {city}
+                              <MapPin className="h-4 w-4 mr-2 text-gray-400" />
+                              Klinikker i {city}
+                            </Link>
+                          </li>
+                        ))}
+                        <li className="mt-2 pt-2 border-t border-gray-100">
+                          <Link
+                            to="/behandlinger"
+                            className="flex items-center px-4 py-2 text-sm font-medium text-purple-700 hover:bg-purple-50 rounded-md"
+                          >
+                            <Syringe className="h-4 w-4 mr-2 text-purple-600" />
+                            Alle behandlinger
+                          </Link>
+                        </li>
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="text-gray-600 hover:text-blue-700 text-base">
+                      Behandlinger
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="w-64 p-2">
+                        {topTreatments.map((treatment) => (
+                          <li key={treatment.id}>
+                            <Link
+                              to={`/behandling/${treatment.id}`}
+                              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                            >
+                              <Syringe className="h-4 w-4 mr-2 text-gray-400" />
+                              {treatment.title}
                             </Link>
                           </li>
                         ))}
@@ -180,8 +105,18 @@ const Navbar = () => {
                 </NavigationMenuList>
               </NavigationMenu>
 
-              <Button asChild className="bg-blue-600 hover:bg-blue-700">
-                <Link to="/tilbud">Få tilbud</Link>
+              <Link 
+                to="/artikler" 
+                className="text-gray-600 hover:text-blue-700 text-base"
+              >
+                Artikler
+              </Link>
+
+              <Button 
+                asChild 
+                className="bg-purple-950 hover:bg-purple-900 text-white transition-colors"
+              >
+                <Link to="/tilbud">Bestill time</Link>
               </Button>
             </div>
 
@@ -215,14 +150,13 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Enhanced Mobile menu panel */}
+        {/* Mobile menu panel */}
         {isMobileMenuOpen && (
           <div className="md:hidden">
             <div className="fixed inset-0 bg-gray-800/30 backdrop-blur-sm" 
                  onClick={() => setIsMobileMenuOpen(false)} />
             <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-xl">
               <div className="flex flex-col h-full">
-                {/* Mobile menu header */}
                 <div className="p-4 border-b">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-900">Meny</h2>
@@ -237,34 +171,8 @@ const Navbar = () => {
                   </div>
                 </div>
 
-                {/* Mobile menu content */}
                 <div className="flex-1 overflow-y-auto">
                   <nav className="px-4 py-6 space-y-6">
-                    {/* Primary navigation */}
-                    <div className="space-y-3">
-                      <Link 
-                        to="/sporsmal" 
-                        className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        Spørsmål
-                      </Link>
-                      <Link 
-                        to="/kalender" 
-                        className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        Kalender
-                      </Link>
-                      <Link 
-                        to="/samarbeid" 
-                        className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        Samarbeid
-                      </Link>
-                    </div>
-
                     {/* Cities section */}
                     <div className="space-y-3">
                       <h3 className="px-4 text-sm font-semibold text-gray-500 uppercase tracking-wider">
@@ -279,7 +187,27 @@ const Navbar = () => {
                             onClick={() => setIsMobileMenuOpen(false)}
                           >
                             <MapPin className="h-5 w-5 mr-3 text-gray-400" />
-                            <span>Regnskapsfører {city}</span>
+                            <span>Klinikker i {city}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Treatments section */}
+                    <div className="space-y-3">
+                      <h3 className="px-4 text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                        Populære Behandlinger
+                      </h3>
+                      <div className="space-y-1">
+                        {topTreatments.map((treatment) => (
+                          <Link
+                            key={treatment.id}
+                            to={`/behandling/${treatment.id}`}
+                            className="flex items-center px-4 py-3 text-base text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            <Syringe className="h-5 w-5 mr-3 text-gray-400" />
+                            <span>{treatment.title}</span>
                           </Link>
                         ))}
                       </div>
@@ -287,18 +215,16 @@ const Navbar = () => {
                   </nav>
                 </div>
 
-                {/* Mobile menu footer */}
                 <div className="p-4 border-t bg-gray-50">
                   <Button 
                     asChild 
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-purple-950 hover:bg-purple-900 text-white transition-colors"
                   >
                     <Link 
                       to="/tilbud"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center justify-center"
                     >
-                      Få tilbud
+                      Bestill time
                     </Link>
                   </Button>
                 </div>

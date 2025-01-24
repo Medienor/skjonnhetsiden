@@ -22,6 +22,13 @@ import QuestionsPage from "./pages/sporsmal/index";
 import QuestionPage from "./pages/sporsmal/[slug]";
 import SamarbeidPage from "./pages/samarbeid";
 import { OfferBar } from '@/components/OfferBar';
+import CompanySearch from "@/pages/CompanySearch";
+import { BehandlingPage } from '@/pages/BehandlingPage';
+import { BehandlingerPage } from "@/pages/BehandlingerPage";
+import TreatmentCityPage from '@/pages/TreatmentCityPage';
+import Cookies from "@/pages/Cookies";
+import ArtiklerPage from "./pages/artikler";
+import ArticlePage from "./pages/artikler/[slug]";
 
 const queryClient = new QueryClient();
 
@@ -46,7 +53,7 @@ const router = createBrowserRouter([
         element: <Index />,
       },
       {
-        path: "/regnskapsforer/:name",
+        path: "/klinikk/:name",
         element: <CompanyPage />,
       },
       {
@@ -96,6 +103,34 @@ const router = createBrowserRouter([
       {
         path: "/samarbeid",
         element: <SamarbeidPage />,
+      },
+      {
+        path: "/company-search",
+        element: <CompanySearch />
+      },
+      {
+        path: "/behandling/:id",
+        element: <BehandlingPage />,
+      },
+      {
+        path: "/behandlinger",
+        element: <BehandlingerPage />
+      },
+      {
+        path: "/behandling/:treatment/:city",
+        element: <TreatmentCityPage />
+      },
+      {
+        path: "/cookies",
+        element: <Cookies />,
+      },
+      {
+        path: "/artikler",
+        element: <ArtiklerPage />,
+      },
+      {
+        path: "/artikler/:slug",
+        element: <ArticlePage />,
       },
     ],
   },

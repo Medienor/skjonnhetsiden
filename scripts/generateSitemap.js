@@ -54,25 +54,62 @@ const { data: guides } = await supabase
   .select('title, slug')
   .order('created_at', { ascending: false });
 
+// Fetch treatments from Supabase
+const { data: treatments } = await supabase
+  .from('treatment_content')
+  .select('treatment_id')
+  .eq('published', true);
+
+// Fetch articles from Supabase
+const { data: articles } = await supabase
+  .from('treatment_guides')
+  .select('slug')
+  .eq('published', true)
+  .order('created_at', { ascending: false });
+
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://regnskapsførerlisten.no/</loc>
+    <loc>https://skjønnhetsklinikker.no/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://skjønnhetsklinikker.no/behandlinger</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://skjønnhetsklinikker.no/artikler</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
   ${municipalitiesJson.map(municipality => `
   <url>
-    <loc>https://regnskapsførerlisten.no/${normalizeMunicipalityName(municipality.name)}</loc>
+    <loc>https://skjønnhetsklinikker.no/${normalizeMunicipalityName(municipality.name)}</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   `).join('')}
-  ${guides.map(guide => `
+  ${treatments?.map(treatment => `
   <url>
-    <loc>https://regnskapsførerlisten.no/sporsmal/${guide.slug}</loc>
+    <loc>https://skjønnhetsklinikker.no/behandling/${treatment.treatment_id}</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
+  </url>
+  ${municipalitiesJson.map(municipality => `
+  <url>
+    <loc>https://skjønnhetsklinikker.no/behandling/${treatment.treatment_id}/${normalizeMunicipalityName(municipality.name)}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  `).join('')}
+  `).join('')}
+  ${articles?.map(article => `
+  <url>
+    <loc>https://skjønnhetsklinikker.no/artikler/${article.slug}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   `).join('')}
 </urlset>`;

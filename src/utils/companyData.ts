@@ -77,22 +77,33 @@ export const getCompaniesByMunicipality = (municipality: string): Company[] => {
 export const getCompaniesByLocation = (searchTerm: string): Company[] => {
   if (!searchTerm) return [];
 
-  if (/^\d{4}$/.test(searchTerm)) {
-    // If it's a postal code, get companies directly by postal code
-    // AND companies in the municipality that the postal code belongs to
-    const municipality = findMunicipalityByPostalCode(searchTerm);
-    if (municipality) {
-      return companyData.filter(company => 
-        company.forretningsadresse?.postnummer === searchTerm ||
-        (company.forretningsadresse?.kommune && 
-         company.forretningsadresse.kommune.toUpperCase() === municipality.toUpperCase())
-      );
-    }
-    return getCompaniesByPostalCode(searchTerm);
-  }
+  console.log('Searching companies by location:', searchTerm);
+
+  // Normalize the search term
+  const normalizedSearchTerm = searchTerm.toUpperCase().trim();
   
-  // If it's not a postal code, search by municipality name
-  return getCompaniesByMunicipality(searchTerm);
+  return companyData.filter(company => {
+    const companyKommune = company.forretningsadresse?.kommune?.toUpperCase() || '';
+    const companyPostKommune = company.postadresse?.kommune?.toUpperCase() || '';
+    const companyPostnr = company.forretningsadresse?.postnummer || '';
+    
+    const matchesKommune = 
+      companyKommune === normalizedSearchTerm ||
+      companyPostKommune === normalizedSearchTerm;
+    
+    const matchesPostalCode = companyPostnr === searchTerm;
+
+    if (matchesKommune || matchesPostalCode) {
+      console.log('Found match:', {
+        company: company.navn,
+        kommune: companyKommune,
+        postKommune: companyPostKommune,
+        postnr: companyPostnr
+      });
+    }
+
+    return matchesKommune || matchesPostalCode;
+  });
 };
 
 // Helper function to get accounting firms by location
@@ -109,8 +120,10 @@ export const getCompanyByNormalizedName = (normalizedName: string): Company | un
   );
 };
 
-// Add helper function to normalize company names for URLs
-export const normalizeCompanyName = (name: string): string => {
+// Update the normalizeCompanyName function to handle undefined
+export const normalizeCompanyName = (name: string | undefined): string => {
+  if (!name) return '';
+  
   return name
     .toLowerCase()
     .replace(/æ/g, 'ae')
@@ -118,6 +131,82 @@ export const normalizeCompanyName = (name: string): string => {
     .replace(/å/g, 'a')
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+};
+
+// Add new function to get beauty clinics (based on industry code)
+export const getBeautyClinics = (): Company[] => {
+  const clinics = companyData.filter(
+    company => 
+      !company.navn.toUpperCase().includes('HOLDING') &&
+      (company.naeringskode1?.kode === "86.909" || // Beauty treatment
+       company.naeringskode1?.kode === "96.020" || // Hairdressing and beauty treatment
+       company.naeringskode1?.kode === "86.902")   // Physical therapy
+  );
+  
+  return shuffleArray(clinics);
+};
+
+// Get beauty clinics by city
+export const getBeautyClinicsByCity = (city: string): Company[] => {
+  const normalizedCity = city.toLowerCase();
+  return getBeautyClinics().filter(company => 
+    (company.forretningsadresse?.kommune?.toLowerCase() === normalizedCity) ||
+    (company.postadresse?.kommune?.toLowerCase() === normalizedCity)
+  );
+};
+
+// Helper function to get beauty clinics by location
+export const getBeautyClinicsByLocation = (searchTerm: string): Company[] => {
+  console.log('Searching for beauty clinics in:', searchTerm);
+  
+  // Get all companies in the location first
+  const locationCompanies = getCompaniesByLocation(searchTerm);
+  console.log('Total companies in location:', locationCompanies.length);
+
+  // Filter for beauty clinics
+  const beautyClinics = locationCompanies.filter(company => {
+    const isBeautyClinic = 
+      company.naeringskode1?.kode === "86.909" ||
+      company.naeringskode1?.kode === "96.020" ||
+      company.naeringskode1?.kode === "86.902";
+    
+    const isNotHolding = !company.navn.toUpperCase().includes('HOLDING');
+    
+    console.log(`Company: ${company.navn}`, {
+      code: company.naeringskode1?.kode,
+      isBeautyClinic,
+      isNotHolding,
+      kommune: company.forretningsadresse?.kommune
+    });
+
+    return isBeautyClinic && isNotHolding;
+  });
+
+  console.log('Found beauty clinics:', beautyClinics.length);
+  return beautyClinics;
+};
+
+// Add this helper function and export it
+export const shuffleArray = <T>(array: T[]): T[] => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
+// Add new function to get company by organization number
+export const getCompanyByOrgNumber = (orgNumber: string): Company | undefined => {
+  return companyData.find(company => 
+    company.organisasjonsnummer === orgNumber
+  );
+};
+
+// Add helper to validate organization number format
+export const isValidOrgNumber = (orgNumber: string): boolean => {
+  // Norwegian org numbers are exactly 9 digits
+  return /^\d{9}$/.test(orgNumber);
 }; 
