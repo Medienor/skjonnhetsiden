@@ -17,7 +17,6 @@ import ScrollToTop from "./components/ScrollToTop";
 import GuidesPage from "./pages/guider/index";
 import GuidePage from "./pages/guider/[slug]";
 import Kalender from "./pages/Kalender";
-import Tool from "./pages/Tool";
 import QuestionsPage from "./pages/sporsmal/index";
 import QuestionPage from "./pages/sporsmal/[slug]";
 import SamarbeidPage from "./pages/samarbeid";
@@ -87,10 +86,6 @@ const router = createBrowserRouter([
       {
         path: "/kalender",
         element: <Kalender />,
-      },
-      {
-        path: "/tool",
-        element: <Tool />,
       },
       {
         path: "/sporsmal",

@@ -1,0 +1,116 @@
+{
+  "reviews": [
+    {
+      "id": 1737287467605,
+      "companyId": "932055171",
+      "authorName": "sf",
+      "rating": 5,
+      "comment": "sdf",
+      "date": "2025-01-19T11:51:07.605Z"
+    },
+    {
+      "id": 1737287842609,
+      "companyId": "937195281",
+      "authorName": "sdf",
+      "rating": 5,
+      "comment": "sdf",
+      "date": "2025-01-19T11:57:22.609Z"
+    },
+    {
+      "id": 1737287858497,
+      "companyId": "937195281",
+      "authorName": "sdf",
+      "rating": 2,
+      "comment": "sdf",
+      "date": "2025-01-19T11:57:38.497Z"
+    },
+    {
+      "id": 1737287882930,
+      "companyId": "913168038",
+      "authorName": "sdfsd",
+      "rating": 5,
+      "comment": "sdfsdf",
+      "date": "2025-01-19T11:58:02.930Z"
+    },
+    {
+      "id": 1737288005544,
+      "companyId": "987935359",
+      "authorName": "sdf",
+      "rating": 5,
+      "comment": "sdf",
+      "date": "2025-01-19T12:00:05.544Z"
+    },
+    {
+      "id": 1737288062819,
+      "companyId": "987935359",
+      "authorName": "dfg",
+      "rating": 5,
+      "comment": "dfg",
+      "date": "2025-01-19T12:01:02.819Z"
+    },
+    {
+      "id": 1737288113253,
+      "companyId": "987935359",
+      "authorName": "tmmy",
+      "rating": 5,
+      "comment": "sfdsd",
+      "date": "2025-01-19T12:01:53.253Z"
+    },
+    {
+      "id": 1737288233593,
+      "companyId": "987935359",
+      "authorName": "sdf",
+      "rating": 5,
+      "comment": "sdf",
+      "date": "2025-01-19T12:03:53.593Z"
+    },
+    {
+      "id": 1737288239433,
+      "companyId": "987935359",
+      "authorName": "sdf",
+      "rating": 5,
+      "comment": "sdf",
+      "date": "2025-01-19T12:03:59.433Z"
+    },
+    {
+      "id": 1737288301319,
+      "companyId": "987935359",
+      "authorName": "asd",
+      "rating": 5,
+      "comment": "asd",
+      "date": "2025-01-19T12:05:01.319Z"
+    },
+    {
+      "id": 1737288374353,
+      "companyId": "987935359",
+      "authorName": "sdf",
+      "rating": 5,
+      "comment": "sdf",
+      "date": "2025-01-19T12:06:14.353Z"
+    },
+    {
+      "id": 1737288394455,
+      "companyId": "987935359",
+      "authorName": "sdf",
+      "rating": 4,
+      "comment": "sdf",
+      "date": "2025-01-19T12:06:34.455Z"
+    },
+    {
+      "id": 1737288613606,
+      "companyId": "932055171",
+      "authorName": "byby",
+      "rating": 5,
+      "comment": "byby",
+      "date": "2025-01-19T12:10:13.606Z"
+    },
+    {
+      "id": 1737289675702,
+      "companyId": "917780242",
+      "authorName": "Tommy",
+      "rating": 5,
+      "comment": "Kjempe bra selskap!",
+      "date": "2025-01-19T12:27:55.702Z"
+    }
+  ]
+}
