@@ -6,12 +6,12 @@ const Privacy = () => {
   return (
     <>
       <Helmet>
-        <title>Personvernerklæring | Skjønnhetsklinikkguiden.no</title>
+        <title>Personvernerklæring | Skjønnhetsklinikker.no</title>
         <meta 
           name="description" 
           content="Les om hvordan vi behandler dine personopplysninger. Vår personvernerklæring forklarer hvordan vi samler inn, bruker og beskytter din informasjon."
         />
-        <meta property="og:title" content="Personvernerklæring - Skjønnhetsklinikkguiden.no" />
+        <meta property="og:title" content="Personvernerklæring - Skjønnhetsklinikker.no" />
         <meta 
           property="og:description" 
           content="Vi tar ditt personvern på alvor. Les om hvordan vi beskytter dine personopplysninger."
@@ -28,7 +28,7 @@ const Privacy = () => {
               <CardContent className="p-6">
                 <h2 className="text-2xl font-semibold text-purple-800 mb-4">Innsamling av personopplysninger</h2>
                 <p className="text-gray-600 mb-4">
-                  Skjønnhetsklinikkguiden.no samler inn og behandler personopplysninger i samsvar med gjeldende personvernlovgivning. Vi tar ditt personvern på alvor og er forpliktet til å beskytte dine personopplysninger.
+                  Skjønnhetsklinikker.no samler inn og behandler personopplysninger i samsvar med gjeldende personvernlovgivning. Vi tar ditt personvern på alvor og er forpliktet til å beskytte dine personopplysninger.
                 </p>
                 <p className="text-gray-600">
                   Vi samler inn følgende typer personopplysninger:

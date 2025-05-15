@@ -5,12 +5,12 @@ const Cookies = () => {
   return (
     <>
       <Helmet>
-        <title>Informasjonskapsler (cookies) | Skjønnhetsklinikkguiden.no</title>
+        <title>Informasjonskapsler (cookies) | Skjønnhetsklinikker.no</title>
         <meta 
           name="description" 
-          content="Les om hvordan vi bruker informasjonskapsler (cookies) på Skjønnhetsklinikkguiden.no for å forbedre din brukeropplevelse."
+          content="Les om hvordan vi bruker informasjonskapsler (cookies) på Skjønnhetsklinikker.no for å forbedre din brukeropplevelse."
         />
-        <meta property="og:title" content="Informasjonskapsler - Skjønnhetsklinikkguiden.no" />
+        <meta property="og:title" content="Informasjonskapsler - Skjønnhetsklinikker.no" />
         <meta 
           property="og:description" 
           content="Lær mer om hvordan vi bruker cookies for å gi deg en bedre opplevelse på våre nettsider."

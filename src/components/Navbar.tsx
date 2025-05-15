@@ -112,6 +112,20 @@ const Navbar = () => {
                 Artikler
               </Link>
 
+              <Link 
+                to="/prisguider" 
+                className="text-gray-600 hover:text-blue-700 text-base"
+              >
+                Prisguider
+              </Link>
+
+              <Link 
+                to="/samarbeid" 
+                className="text-gray-600 hover:text-blue-700 text-base"
+              >
+                Samarbeid
+              </Link>
+
               <Button 
                 asChild 
                 className="bg-purple-950 hover:bg-purple-900 text-white transition-colors"
@@ -210,6 +224,38 @@ const Navbar = () => {
                             <span>{treatment.title}</span>
                           </Link>
                         ))}
+                        <Link
+                          to="/prisguider"
+                          className="flex items-center px-4 py-3 text-base text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <span>Prisguider</span>
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Other Links section */}
+                    <div className="space-y-3">
+                      <h3 className="px-4 text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                        Mer
+                      </h3>
+                      <div className="space-y-1">
+                        <Link
+                          to="/artikler"
+                          className="flex items-center px-4 py-3 text-base text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          {/* Optional: Add an icon here if desired */}
+                          <span>Artikler</span>
+                        </Link>
+                        <Link
+                          to="/samarbeid"
+                          className="flex items-center px-4 py-3 text-base text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          {/* Optional: Add an icon here if desired */}
+                          <span>Samarbeid</span>
+                        </Link>
                       </div>
                     </div>
                   </nav>

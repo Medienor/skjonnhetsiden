@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Star, Users, Clock, CheckCircle, MapPin } from "lucide-react";
+import { Star, Users, Clock, CheckCircle, MapPin, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -30,6 +30,44 @@ interface Review {
   created_at: string;
   updated_at: string;
 }
+
+const RelevantTreatments = () => {
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h3 className="text-lg font-semibold mb-4">Populære behandlinger</h3>
+      <div className="space-y-3">
+        {TREATMENTS.slice(0, 8).map((treatment) => (
+          <Link
+            key={treatment.id}
+            to={`/behandling/${treatment.id}`}
+            className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-md group transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-md bg-purple-50 flex items-center justify-center">
+                <img 
+                  src={treatment.image} 
+                  alt="" 
+                  className="w-6 h-6 object-contain"
+                />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-gray-900 group-hover:text-purple-600">
+                  {treatment.title}
+                </h4>
+                {treatment.price && (
+                  <p className="text-xs text-gray-500">
+                    Fra kr {treatment.price.from},-
+                  </p>
+                )}
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600" />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const CompanyPage = () => {
   const { name } = useParams<{ name: string }>();
@@ -236,7 +274,7 @@ const CompanyPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-8">
-              <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="bg-white rounded-xl shadow-lg p-4 sm:p-8">
                 {/* Location Map */}
                 <div className="mb-8">
                   <h2 className="text-2xl font-semibold text-purple-900 mb-4">
@@ -279,85 +317,18 @@ const CompanyPage = () => {
                   </div>
                 </div>
 
-                {/* Services and Pricing Box */}
-                <div className="mt-12">
-                  <h2 className="text-2xl font-semibold text-purple-900 mb-6">
-                    Priser og tjenester
-                  </h2>
-                  <div className="grid grid-cols-1 gap-4">
-                    {TREATMENTS.slice(0, 6).map((treatment: Treatment) => (
-                      <div 
-                        key={treatment.id} 
-                        className="bg-white border border-gray-200 rounded-xl p-4 hover:border-purple-200 transition-colors"
-                      >
-                        <div className="flex gap-6">
-                          {/* Image Section */}
-                          <div className="w-32 h-32 flex-shrink-0">
-                            <img
-                              src={treatment.image || '/placeholder-treatment.jpg'}
-                              alt={treatment.title}
-                              className="w-full h-full object-cover rounded-lg"
-                            />
-                          </div>
-
-                          {/* Content Section */}
-                          <div className="flex-1">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h3 className="text-lg font-semibold text-gray-900">{treatment.title}</h3>
-                                <p className="text-sm text-gray-600 mt-1">{treatment.shortDescription}</p>
-                                {treatment.duration && (
-                                  <div className="flex items-center mt-2 text-sm text-gray-500">
-                                    <Clock className="w-4 h-4 mr-1" />
-                                    <span>{treatment.duration.from}-{treatment.duration.to} minutter</span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="text-right">
-                                <div className="text-lg font-semibold text-purple-600">
-                                  Fra kr {treatment.price?.from.toLocaleString('no-NO')},-
-                                </div>
-                                {treatment.price?.to && (
-                                  <div className="text-sm text-gray-500">
-                                    Til kr {treatment.price.to.toLocaleString('no-NO')},-
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="mt-4 pt-4 border-t border-gray-100">
-                              <div className="flex items-center justify-between">
-                                <div className="flex flex-wrap gap-2">
-                                  {treatment.fordeler.slice(0, 2).map((fordel: string, index: number) => (
-                                    <Badge 
-                                      key={index}
-                                      variant="secondary" 
-                                      className="bg-purple-50 text-purple-700"
-                                    >
-                                      {fordel}
-                                    </Badge>
-                                  ))}
-                                </div>
-                                <Button 
-                                  variant="outline"
-                                  className="text-purple-600 border-purple-200 hover:bg-purple-50"
-                                  onClick={() => navigate('/tilbud')}
-                                >
-                                  Book time
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                {/* Disclaimer Box */}
+                <div className="bg-gray-100 p-4 rounded-lg mb-8 text-center">
+                  <p className="text-sm text-gray-700">
+                    Ingen samarbeid med denne klinikken - Besøk nettsiden til klinikken for prisoversikt over tjenester
+                  </p>
                 </div>
 
                 {/* Reviews Section */}
                 <div className="mt-12">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-semibold text-purple-900">Kundeomtaler</h2>
-                    <Button 
+                    <Button
                       onClick={() => setIsReviewDialogOpen(true)}
                       className="bg-purple-600 hover:bg-purple-700"
                     >
@@ -389,31 +360,13 @@ const CompanyPage = () => {
                     ))}
                   </div>
                 </div>
-
-                {/* Treatments Section */}
-                <div className="mt-12">
-                  <h2 className="text-2xl font-semibold text-purple-900 mb-6">
-                    Våre behandlinger
-                  </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {TREATMENTS.slice(0, 6).map((treatment) => (
-                      <div key={treatment.id} className="bg-purple-50 rounded-xl p-4">
-                        <h3 className="font-semibold text-purple-900">{treatment.title}</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Fra kr {treatment.price?.from.toLocaleString('no-NO')},-
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
 
             {/* Sidebar */}
-            <div className="lg:col-span-4">
-              <div className="sticky top-4">
-                <RequestOfferForm />
-              </div>
+            <div className="lg:col-span-4 space-y-6">
+              <RequestOfferForm />
+              <RelevantTreatments />
             </div>
           </div>
         </div>

@@ -137,15 +137,19 @@ export const normalizeCompanyName = (name: string | undefined): string => {
 
 // Add new function to get beauty clinics (based on industry code)
 export const getBeautyClinics = (): Company[] => {
-  const clinics = companyData.filter(
-    company => 
-      !company.navn.toUpperCase().includes('HOLDING') &&
-      (company.naeringskode1?.kode === "86.909" || // Beauty treatment
-       company.naeringskode1?.kode === "96.020" || // Hairdressing and beauty treatment
-       company.naeringskode1?.kode === "86.902")   // Physical therapy
-  );
-  
-  return shuffleArray(clinics);
+  return companyData.filter(company => {
+    const upperName = company.navn.toUpperCase();
+    const isBeautyClinic = 
+      company.naeringskode1?.kode === "86.909" ||
+      company.naeringskode1?.kode === "96.020" ||
+      company.naeringskode1?.kode === "86.902";
+    
+    const isNotHolding = !upperName.includes('HOLDING');
+    const isNotGroup = !upperName.includes('GROUP');
+    const isNotInvest = !upperName.includes('INVEST');
+    
+    return isBeautyClinic && isNotHolding && isNotGroup && isNotInvest;
+  });
 };
 
 // Get beauty clinics by city

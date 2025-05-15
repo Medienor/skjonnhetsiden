@@ -69,12 +69,12 @@ const Contact = () => {
   return (
     <>
       <Helmet>
-        <title>Kontakt oss | Skjønnhetsklinikkguiden.no</title>
+        <title>Kontakt oss | Skjønnhetsklinikker.no</title>
         <meta 
           name="description" 
-          content="Ta kontakt med Skjønnhetsklinikkguiden.no. Vi hjelper deg med å finne den rette klinikken for din behandling. Kontakt oss i dag!"
+          content="Ta kontakt med Skjønnhetsklinikker.no. Vi hjelper deg med å finne den rette klinikken for din behandling. Kontakt oss i dag!"
         />
-        <meta property="og:title" content="Kontakt Skjønnhetsklinikkguiden.no" />
+        <meta property="og:title" content="Kontakt Skjønnhetsklinikker.no" />
         <meta 
           property="og:description" 
           content="Har du spørsmål? Ta kontakt med oss i dag for hjelp med å finne den perfekte klinikken for din behandling."

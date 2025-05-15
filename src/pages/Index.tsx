@@ -25,7 +25,7 @@ const norwegianCities = [
 ];
 
 const ITEMS_PER_PAGE = 10;
-const MAX_ITEMS = 20;
+const MAX_ITEMS = 10;
 
 interface CompanyWithReviews extends Company {
   reviewScore: number;
@@ -43,57 +43,104 @@ interface IpLocation {
   country: string;
 }
 
-const CompanyCard = ({ company }: { company: CompanyWithReviews }) => {
-  const normalizedName = normalizeCompanyName(company.navn);
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+const getRandomColor = (companyName: string) => {
+  // Using company name as seed to get consistent color for each company
+  const colors = [
+    'bg-blue-500',
+    'bg-purple-500',
+    'bg-pink-500',
+    'bg-indigo-500',
+    'bg-teal-500',
+    'bg-emerald-500',
+    'bg-orange-500',
+    'bg-rose-500',
+  ];
+  const index = companyName.length % colors.length;
+  return colors[index];
+};
+
+const getRandomPrice = (treatment: 'botox' | 'filler') => {
+  const ranges = {
+    botox: {
+      min: 1490,
+      max: 2990,
+      step: 100
+    },
+    filler: {
+      min: 2490,
+      max: 4990,
+      step: 100
+    }
+  };
+
+  const range = ranges[treatment];
+  const steps = Math.floor((range.max - range.min) / range.step);
+  const randomSteps = Math.floor(Math.random() * steps);
+  return range.min + (randomSteps * range.step);
+};
+
+const CompanyCard: React.FC<{ company: CompanyWithReviews }> = ({ company }) => {
+  const normalizedName = company.navn.toLowerCase().replace(/\s+/g, '-').replace(/æ/g, 'ae').replace(/ø/g, 'o').replace(/å/g, 'a');
+  
+  // Mockup prices - these can be removed if the display section is removed
+  // const botoxPrice = Math.floor(Math.random() * (3500 - 1800 + 1) + 1800).toString().slice(0, -2) + "90";
+  // const fillerPrice = Math.floor(Math.random() * (4500 - 2800 + 1) + 2800).toString().slice(0, -2) + "90";
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="flex items-start gap-4 mb-4">
-        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-          <Building2 className="w-8 h-8 text-gray-400" />
-        </div>
-        <div className="flex-1">
-          <h3 className="text-xl font-semibold text-blue-900">{company.navn}</h3>
-          <div className="flex items-center gap-1 mt-1">
-            <div className="flex items-center">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-4 h-4 ${
-                    i < Math.floor(Number(company.reviewScore))
-                      ? "text-yellow-400 fill-yellow-400"
-                      : "text-gray-300"
-                  }`}
-                />
-              ))}
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl">
+      <div className="p-5">
+        <div className="flex items-start gap-4 mb-4">
+          <div className={`w-12 h-12 rounded-full ${getRandomColor(company.navn)} flex items-center justify-center`}>
+            <span className="text-base font-semibold text-white">{getInitials(company.navn)}</span>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-semibold text-blue-900">{company.navn}</h3>
+            <div className="flex items-center gap-1 mt-1">
+              <div className="flex items-center">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-4 h-4 ${
+                      i < Math.floor(Number(company.reviewScore))
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-gray-600 ml-2">
+                {company.reviewScore.toFixed(1)} ({company.reviewCount} vurderinger)
+              </span>
             </div>
-            <span className="text-sm text-gray-600 ml-2">
-              {company.reviewScore.toFixed(1)} ({company.reviewCount} vurderinger)
-            </span>
           </div>
         </div>
-      </div>
-      
-      {company.forretningsadresse && (
-        <p className="text-gray-600 mb-2">
-          {company.forretningsadresse.adresse.join(', ')}<br />
-          {company.forretningsadresse.postnummer} {company.forretningsadresse.poststed}
-        </p>
-      )}
-      {company.telefon && (
-        <p className="text-gray-600">Tlf: {company.telefon}</p>
-      )}
-      {company.mobil && (
-        <p className="text-gray-600">Mobil: {company.mobil}</p>
-      )}
-      
-      <div className="mt-4 pt-4 border-t">
-        <Link 
-          to={`/regnskapsforer/${normalizedName}`}
-          className="text-blue-600 hover:text-blue-800 font-medium"
-        >
-          Les vurderinger →
-        </Link>
+        
+        {company.forretningsadresse && (
+          <p className="text-gray-600 text-sm mb-2 px-5">
+            {company.forretningsadresse.adresse[0]}, {company.forretningsadresse.poststed}
+          </p>
+        )}
+        
+        <div className="mt-3 pt-3 border-t flex items-center justify-between px-5 pb-5">
+          <Link 
+            to={`/klinikk/${normalizedName}`}
+            className="text-blue-600 hover:text-blue-800 font-medium text-sm inline-flex items-center"
+          >
+            Les vurderinger <ArrowRight className="w-4 h-4 ml-1" />
+          </Link>
+          {company.telefon && (
+            <span className="text-sm text-gray-600">Tlf: {company.telefon}</span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -128,7 +175,13 @@ const Index = () => {
   useEffect(() => {
     const fetchCompaniesWithReviews = async () => {
       try {
-        const initialCompanies = getBeautyClinics().slice(0, MAX_ITEMS);
+        const initialCompanies = getBeautyClinics()
+          .filter(company => {
+            const upperName = company.navn.toUpperCase();
+            return !upperName.includes('GROUP') && !upperName.includes('INVEST');
+          })
+          .slice(0, MAX_ITEMS);
+        
         const orgNumbers = initialCompanies.map(company => company.organisasjonsnummer);
         
         const { data: reviewsData, error } = await supabase
@@ -267,10 +320,15 @@ const Index = () => {
     
     if (!/^\d{4}$/.test(term)) {
       const filtered = getBeautyClinics()
-        .filter(company =>
-          company.navn.toLowerCase().includes(term.toLowerCase()) ||
-          company.forretningsadresse?.kommune.toLowerCase().includes(term.toLowerCase())
-        )
+        .filter(company => {
+          const upperName = company.navn.toUpperCase();
+          return (
+            !upperName.includes('GROUP') && 
+            !upperName.includes('INVEST') &&
+            (company.navn.toLowerCase().includes(term.toLowerCase()) ||
+             company.forretningsadresse?.kommune.toLowerCase().includes(term.toLowerCase()))
+          );
+        })
         .slice(0, MAX_ITEMS)
         .map(company => ({
           ...company,
@@ -284,11 +342,6 @@ const Index = () => {
       setFilteredCompanies(filtered);
     }
   };
-
-  // Calculate pagination
-  const totalPages = Math.min(Math.ceil(filteredCompanies.length / ITEMS_PER_PAGE), 2);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedCompanies = filteredCompanies.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handleFilter = (filtered: Company[]) => {
     setCurrentPage(1); // Reset to first page when filtering
@@ -397,13 +450,13 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-8">
             <FilterSection 
               onFilter={handleFilter}
-              companies={getBeautyClinics()}
+              companies={getBeautyClinics().slice(0, MAX_ITEMS)}
             />
             <div>
               {filteredCompanies.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    {paginatedCompanies.map((company) => (
+                    {filteredCompanies.map((company) => (
                       <CompanyCard 
                         key={company.organisasjonsnummer} 
                         company={company as CompanyWithReviews} 
@@ -411,28 +464,8 @@ const Index = () => {
                     ))}
                   </div>
 
-                  {/* Pagination */}
-                  {totalPages > 1 && (
-                    <div className="flex justify-center gap-2 mt-8">
-                      <Button
-                        variant="outline"
-                        onClick={() => setCurrentPage(1)}
-                        disabled={currentPage === 1}
-                      >
-                        1
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setCurrentPage(2)}
-                        disabled={currentPage === 2}
-                      >
-                        2
-                      </Button>
-                    </div>
-                  )}
-
                   <div className="text-center text-gray-600 mt-4">
-                    Viser {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, filteredCompanies.length)} av {filteredCompanies.length} skjønnhetsklinikker
+                    Viser {filteredCompanies.length} av {filteredCompanies.length} skjønnhetsklinikker
                     {filteredCompanies.length === MAX_ITEMS && (
                       <span className="ml-1">
                         (Søk eller filtrer for mer spesifikke resultater)

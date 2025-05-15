@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
 import type { Company } from "@/types/Company";
@@ -11,9 +11,11 @@ interface FilterSectionProps {
 }
 
 export const FilterSection = ({ onFilter, companies }: FilterSectionProps) => {
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [selectedCertifications, setSelectedCertifications] = useState<string[]>([]);
-  const [selectedPayments, setSelectedPayments] = useState<string[]>([]);
+  const [filters, setFilters] = useState({
+    treatments: new Set<string>(),
+    certifications: new Set<string>(),
+    payments: new Set<string>(),
+  });
 
   const services = [
     { id: "botox", label: "Botox" },
@@ -37,42 +39,53 @@ export const FilterSection = ({ onFilter, companies }: FilterSectionProps) => {
     { id: "financing", label: "Delbetaling" }
   ];
 
-  const handleFilter = () => {
-    let filtered = [...companies];
-    
-    const hasActiveFilters = selectedServices.length > 0 || 
-                           selectedCertifications.length > 0 || 
-                           selectedPayments.length > 0;
-
-    if (hasActiveFilters) {
-      if (selectedServices.length > 0) {
-        filtered = filtered.filter(() => Math.random() > 0.3);
-      }
-
-      if (selectedCertifications.length > 0) {
-        filtered = filtered.filter(() => Math.random() > 0.3);
-      }
-
-      if (selectedPayments.length > 0) {
-        filtered = filtered.filter(() => Math.random() > 0.3);
-      }
+  // Memoize the filtered companies
+  const filteredCompanies = useMemo(() => {
+    if (!filters.treatments.size && !filters.certifications.size && !filters.payments.size) {
+      return companies;
     }
 
-    filtered = shuffleArray(filtered);
-    
-    if (filtered.length === 0) {
-      filtered = shuffleArray(companies).slice(0, 5);
-    }
+    return companies.filter(company => {
+      const hasTreatment = filters.treatments.size === 0 || 
+        (company.treatments?.some(t => filters.treatments.has(t.toString())) ?? false);
+      
+      const hasCertification = filters.certifications.size === 0 || 
+        (company.certifications?.some(c => filters.certifications.has(c.toString())) ?? false);
+      const hasPayment = filters.payments.size === 0 || 
+        (company.paymentMethods?.some(p => filters.payments.has(p)) ?? false);
 
-    onFilter(filtered);
+      return hasTreatment && hasCertification && hasPayment;
+    });
+  }, [companies, filters]);
+
+  // Update filters
+  const handleFilterChange = (type: 'treatments' | 'certifications' | 'payments', value: string) => {
+    setFilters(prev => {
+      const newFilters = { ...prev };
+      const set = new Set(prev[type]);
+      
+      if (set.has(value)) {
+        set.delete(value);
+      } else {
+        set.add(value);
+      }
+      
+      newFilters[type] = set;
+      return newFilters;
+    });
   };
+
+  // Effect to trigger parent update when filters change
+  useEffect(() => {
+    onFilter(filteredCompanies);
+  }, [filteredCompanies, onFilter]);
 
   return (
     <Card className="bg-white border-0 shadow-md">
       <CardContent className="p-6">
         <h2 className="text-xl font-semibold text-blue-900 mb-8">Filtrer klinikker</h2>
         
-        {/* Services Section */}
+        {/* Treatments Section */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-blue-600" />
@@ -83,18 +96,11 @@ export const FilterSection = ({ onFilter, companies }: FilterSectionProps) => {
               <div 
                 key={service.id} 
                 className="flex items-center space-x-2 group cursor-pointer"
-                onClick={() => {
-                  setSelectedServices(prev =>
-                    prev.includes(service.id)
-                      ? prev.filter(id => id !== service.id)
-                      : [...prev, service.id]
-                  );
-                  handleFilter();
-                }}
               >
                 <Checkbox
                   id={service.id}
-                  checked={selectedServices.includes(service.id)}
+                  checked={filters.treatments.has(service.id)}
+                  onCheckedChange={() => handleFilterChange('treatments', service.id)}
                   className="border-2 border-blue-200 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                 />
                 <label
@@ -119,18 +125,11 @@ export const FilterSection = ({ onFilter, companies }: FilterSectionProps) => {
               <div 
                 key={cert.id} 
                 className="flex items-center space-x-2 group cursor-pointer"
-                onClick={() => {
-                  setSelectedCertifications(prev =>
-                    prev.includes(cert.id)
-                      ? prev.filter(id => id !== cert.id)
-                      : [...prev, cert.id]
-                  );
-                  handleFilter();
-                }}
               >
                 <Checkbox
                   id={cert.id}
-                  checked={selectedCertifications.includes(cert.id)}
+                  checked={filters.certifications.has(cert.id)}
+                  onCheckedChange={() => handleFilterChange('certifications', cert.id)}
                   className="border-2 border-blue-200 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                 />
                 <label
@@ -155,18 +154,11 @@ export const FilterSection = ({ onFilter, companies }: FilterSectionProps) => {
               <div 
                 key={payment.id} 
                 className="flex items-center space-x-2 group cursor-pointer"
-                onClick={() => {
-                  setSelectedPayments(prev =>
-                    prev.includes(payment.id)
-                      ? prev.filter(id => id !== payment.id)
-                      : [...prev, payment.id]
-                  );
-                  handleFilter();
-                }}
               >
                 <Checkbox
                   id={payment.id}
-                  checked={selectedPayments.includes(payment.id)}
+                  checked={filters.payments.has(payment.id)}
+                  onCheckedChange={() => handleFilterChange('payments', payment.id)}
                   className="border-2 border-blue-200 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                 />
                 <label

@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Star, Building2, Search, Info, Check, ChevronRight, ChevronLeft, Plus, Minus, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, Star, Building2, Search, Info, Check, ChevronRight, ChevronLeft, Plus, Minus, MapPin, SlidersHorizontal, Calendar } from "lucide-react";
 import { FilterSection } from "@/components/FilterSection";
 import { useState, useEffect, useMemo, useRef, MouseEvent, useCallback } from "react";
 import { SearchBar } from "@/components/SearchBar";
@@ -34,6 +34,13 @@ import { TREATMENTS, Treatment } from "@/types/treatments";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { motion, useDragControls, useMotionValue } from "framer-motion";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface CompanyWithReviews extends Company {
   averageRating?: number;
@@ -42,9 +49,36 @@ interface CompanyWithReviews extends Company {
 
 const ITEMS_PER_PAGE = 10;
 
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+const getRandomColor = (companyName: string) => {
+  const colors = [
+    'bg-blue-500',
+    'bg-purple-500',
+    'bg-pink-500',
+    'bg-indigo-500',
+    'bg-teal-500',
+    'bg-emerald-500',
+    'bg-orange-500',
+    'bg-rose-500',
+  ];
+  const index = companyName.length % colors.length;
+  return colors[index];
+};
+
 const CompanyCard = ({ company }: { company: CompanyWithReviews }) => {
   const navigate = useNavigate();
   const normalizedName = normalizeCompanyName(company.navn);
+  const initials = getInitials(company.navn);
+  const bgColor = getRandomColor(company.navn);
+  
   const isPremium = useMemo(() => {
     if (!company.averageRating || !company.totalReviews) return false;
     return company.averageRating > 4.8 && company.totalReviews > 0;
@@ -74,15 +108,12 @@ const CompanyCard = ({ company }: { company: CompanyWithReviews }) => {
 
       <div className="flex items-start gap-4 mb-4">
         <div className={cn(
-          "w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0",
+          "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0",
           isPremium 
-            ? "bg-gradient-to-br from-purple-100 to-purple-50 ring-2 ring-purple-200 shadow-inner"
-            : "bg-gray-100"
+            ? `${bgColor} ring-2 ring-purple-200 shadow-inner`
+            : bgColor
         )}>
-          <Building2 className={cn(
-            "w-8 h-8",
-            isPremium ? "text-purple-600" : "text-gray-400"
-          )} />
+          <span className="text-base font-semibold text-white">{initials}</span>
         </div>
         <div className="flex-1">
           <h3 className="text-xl font-semibold text-gray-900">{company.navn}</h3>
@@ -105,16 +136,10 @@ const CompanyCard = ({ company }: { company: CompanyWithReviews }) => {
           </div>
         </div>
       </div>
-      
+
       {company.forretningsadresse && (
-        <p className="text-gray-600 mb-2">
-          {company.forretningsadresse.adresse.join(', ')}<br />
-          {company.forretningsadresse.postnummer} {company.forretningsadresse.poststed}
-        </p>
-      )}
-      {company.naeringskode1 && (
-        <p className="text-gray-500 text-sm mb-4">
-          {company.naeringskode1.beskrivelse}
+        <p className="text-gray-600 text-sm mb-2">
+          {company.forretningsadresse.adresse[0]}, {company.forretningsadresse.poststed}
         </p>
       )}
       
@@ -381,7 +406,7 @@ const NearbyCities = ({ currentCity }: { currentCity: string }) => {
           return (
             <Link
               key={city.name}
-              to={`/klinikk/${normalizeCompanyName(city.name)}`}
+              to={`/${city.name.toLowerCase()}`}
               className="group bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-all"
             >
               <div className="flex items-start gap-3">
@@ -450,26 +475,78 @@ const CityPage = () => {
   const currentYear = new Date().getFullYear();
   const [companiesWithReviews, setCompaniesWithReviews] = useState<CompanyWithReviews[]>([]);
   
+  // Fetch companies when city changes
   useEffect(() => {
     if (!city) return;
     const properCityName = denormalizeMunicipalityName(city);
-    const allCompanies = getCompaniesByLocation(properCityName);
-    console.log(`Found ${allCompanies.length} companies in ${properCityName}`);
+    const allCompanies = getBeautyClinicsByLocation(properCityName)
+      .filter(company => {
+        const companyCity = company.forretningsadresse?.kommune;
+        return companyCity?.toLowerCase() === properCityName.toLowerCase();
+      });
+    
     setCompanies(allCompanies);
     setFilteredCompanies(allCompanies);
   }, [city]);
 
-  const handleFilter = (filtered: Company[]) => {
-    setCurrentPage(1);
-    setFilteredCompanies(filtered);
-  };
+  // Reviews fetching
+  const fetchCompanyReviews = useCallback(async (companies: Company[]) => {
+    try {
+      const reviewPromises = companies.map(async (company) => {
+        const { data: reviews, error } = await supabase
+          .from('reviews')
+          .select('rating')
+          .eq('org_number', company.organisasjonsnummer);
 
-  // Simple pagination
-  const currentCompanies = filteredCompanies.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE, 
-    currentPage * ITEMS_PER_PAGE
-  );
+        if (error) throw error;
+
+        const totalReviews = reviews?.length || 0;
+        const averageRating = totalReviews > 0
+          ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+          : 0;
+
+        return {
+          ...company,
+          averageRating,
+          totalReviews
+        };
+      });
+
+      const companiesWithReviews = await Promise.all(reviewPromises);
+      setCompaniesWithReviews(companiesWithReviews);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (companies.length > 0) {
+      fetchCompanyReviews(companies);
+    }
+  }, [companies, fetchCompanyReviews]);
+
+  // Pagination calculations
   const totalPages = Math.ceil(filteredCompanies.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  
+  // Get paginated items
+  const paginatedItems = useMemo(() => {
+    return filteredCompanies
+      .slice(startIndex, endIndex)
+      .map(company => {
+        const withReviews = companiesWithReviews.find(
+          c => c.organisasjonsnummer === company.organisasjonsnummer
+        );
+        return withReviews || { ...company, averageRating: 0, totalReviews: 0 };
+      });
+  }, [filteredCompanies, companiesWithReviews, startIndex, endIndex]);
+
+  // Reset page when filter changes
+  const handleFilter = useCallback((filtered: Company[]) => {
+    setFilteredCompanies(filtered);
+    setCurrentPage(1);
+  }, []);
 
   const handleScroll = () => {
     if (scrollContainerRef.current) {
@@ -500,59 +577,6 @@ const CityPage = () => {
 
   // Create the title string first
   const pageTitle = `Skjønnhetsklinikk ${denormalizeMunicipalityName(city || '')}: Beste klinikker i ${currentYear}`;
-
-  // Add this function to fetch reviews for all companies
-  const fetchCompanyReviews = useCallback(async (companies: Company[]) => {
-    try {
-      const reviewPromises = companies.map(async (company) => {
-        // Add console.log to debug
-        console.log('Fetching reviews for:', company.organisasjonsnummer);
-        
-        const { data: reviews, error } = await supabase
-          .from('reviews')
-          .select('rating')
-          .eq('org_number', company.organisasjonsnummer);
-
-        if (error) {
-          console.error('Error fetching reviews:', error);
-          throw error;
-        }
-
-        console.log('Reviews found:', reviews?.length || 0);
-
-        const totalReviews = reviews?.length || 0;
-        const averageRating = totalReviews > 0
-          ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
-          : 0;
-
-        return {
-          ...company,
-          averageRating,
-          totalReviews
-        };
-      });
-
-      const companiesWithReviews = await Promise.all(reviewPromises);
-      console.log('Companies with reviews:', companiesWithReviews);
-      setCompaniesWithReviews(companiesWithReviews);
-    } catch (error) {
-      console.error('Error fetching reviews:', error);
-    }
-  }, []);
-
-  // Update useEffect to fetch reviews when companies change
-  useEffect(() => {
-    if (companies.length > 0) {
-      fetchCompanyReviews(companies);
-    }
-  }, [companies, fetchCompanyReviews]);
-
-  // Update the companies list to use companiesWithReviews
-  const currentCompaniesWithReviews = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return companiesWithReviews
-      .slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [currentPage, companiesWithReviews]);
 
   return (
     <>
@@ -708,13 +732,37 @@ const CityPage = () => {
 
         {/* Companies List Section - Fixed layout */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 lg:grid-cols-[280px,1fr] gap-8">
-            {/* Filters */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <FilterSection 
-                onFilter={handleFilter}
-                companies={companies}
-              />
+          <div className="grid grid-cols-1 lg:grid-cols-[250px,1fr] gap-6">
+            {/* Mobile Filter Button */}
+            <div className="lg:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="w-full">
+                    <SlidersHorizontal className="w-4 h-4 mr-2" />
+                    Filtrer klinikker
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[280px] p-4">
+                  <SheetHeader className="mb-4">
+                    <SheetTitle>Filtrer klinikker</SheetTitle>
+                  </SheetHeader>
+                  <FilterSection 
+                    onFilter={handleFilter}
+                    companies={companies}
+                  />
+                </SheetContent>
+              </Sheet>
+            </div>
+
+            {/* Desktop Filters */}
+            <div className="hidden lg:block">
+              <div className="bg-white rounded-lg shadow-sm p-4">
+                <h3 className="text-lg font-semibold mb-4">Filtrer klinikker</h3>
+                <FilterSection 
+                  onFilter={handleFilter}
+                  companies={companies}
+                />
+              </div>
             </div>
 
             {/* Companies List */}
@@ -722,9 +770,9 @@ const CityPage = () => {
               {filteredCompanies.length > 0 ? (
                 <>
                   <div className="space-y-4">
-                    {currentCompaniesWithReviews.map((company) => (
+                    {paginatedItems.map((company) => (
                       <CompanyCard 
-                        key={company.navn} 
+                        key={company.organisasjonsnummer} 
                         company={company}
                       />
                     ))}
@@ -734,7 +782,7 @@ const CityPage = () => {
                     <div className="mt-8 flex justify-center gap-2">
                       <Button
                         variant="outline"
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                         disabled={currentPage === 1}
                       >
                         <ArrowLeft className="w-4 h-4" />
@@ -744,7 +792,7 @@ const CityPage = () => {
                       </span>
                       <Button
                         variant="outline"
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                         disabled={currentPage === totalPages}
                       >
                         <ArrowRight className="w-4 h-4" />
@@ -753,7 +801,7 @@ const CityPage = () => {
                   )}
 
                   <div className="text-center text-gray-600 mt-4">
-                    Viser {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredCompanies.length)} av {filteredCompanies.length} bedrifter
+                    Viser {startIndex + 1}-{Math.min(endIndex, filteredCompanies.length)} av {filteredCompanies.length} bedrifter
                   </div>
                 </>
               ) : (

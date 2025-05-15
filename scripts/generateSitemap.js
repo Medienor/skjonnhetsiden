@@ -67,6 +67,12 @@ const { data: articles } = await supabase
   .eq('published', true)
   .order('created_at', { ascending: false });
 
+// Fetch price guides from Supabase
+const { data: priceGuides } = await supabase
+  .from('skjonnhet_prisguider')
+  .select('slug')
+  .order('created_at', { ascending: false });
+
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -108,6 +114,18 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
   ${articles?.map(article => `
   <url>
     <loc>https://skjønnhetsklinikker.no/artikler/${article.slug}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  `).join('')}
+  <url>
+    <loc>https://skjønnhetsklinikker.no/prisguider</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  ${priceGuides?.map(guide => `
+  <url>
+    <loc>https://skjønnhetsklinikker.no/prisguider/${guide.slug}</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

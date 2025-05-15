@@ -5,12 +5,12 @@ const AboutUs = () => {
   return (
     <>
       <Helmet>
-        <title>Om oss | Skjønnhetsklinikkguiden.no</title>
+        <title>Om oss | Skjønnhetsklinikker.no</title>
         <meta 
           name="description" 
-          content="Les om hvordan Skjønnhetsklinikkguiden.no hjelper deg med å finne den perfekte klinikken for dine behandlinger. Vår misjon, verdier og historie."
+          content="Les om hvordan Skjønnhetsklinikker.no hjelper deg med å finne den perfekte klinikken for dine behandlinger. Vår misjon, verdier og historie."
         />
-        <meta property="og:title" content="Om Skjønnhetsklinikkguiden.no - Din guide til skjønnhetsbehandlinger" />
+        <meta property="og:title" content="Om Skjønnhetsklinikker.no - Din guide til skjønnhetsbehandlinger" />
         <meta 
           property="og:description" 
           content="Vi forenkler prosessen med å finne kvalifiserte klinikker for dine skjønnhetsbehandlinger."
@@ -23,7 +23,7 @@ const AboutUs = () => {
         <div className="bg-purple-900 py-16 mb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl font-bold text-white mb-4">
-              Om Skjønnhetsklinikkguiden.no
+              Om Skjønnhetsklinikker.no
             </h1>
             <p className="text-xl text-purple-100">
               Din guide til profesjonelle skjønnhetsbehandlinger
@@ -37,7 +37,7 @@ const AboutUs = () => {
               <CardContent className="p-6">
                 <h2 className="text-2xl font-semibold text-purple-800 mb-4">Vår Historie</h2>
                 <p className="text-gray-600 mb-4">
-                  Skjønnhetsklinikkguiden.no ble etablert med en klar visjon: å forenkle prosessen med å finne den perfekte klinikken for dine skjønnhetsbehandlinger. Vi forstår at valg av klinikk er en viktig og personlig beslutning som krever grundig research og sammenligning.
+                  Skjønnhetsklinikker.no ble etablert med en klar visjon: å forenkle prosessen med å finne den perfekte klinikken for dine skjønnhetsbehandlinger. Vi forstår at valg av klinikk er en viktig og personlig beslutning som krever grundig research og sammenligning.
                 </p>
               </CardContent>
             </Card>

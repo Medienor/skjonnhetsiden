@@ -103,7 +103,7 @@ const Footer = () => {
         <div className="mt-12 pt-8 border-t border-purple-800">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-purple-300 text-sm mb-4 md:mb-0">
-              © 2024 Skjønnhetsklinikker.no | Eies av Netsure AS | Org.nr: 834 762 102
+              © 2025 Skjønnhetsklinikker.no | Eies av Netsure AS | Org.nr: 834 762 102
             </div>
             <div className="flex space-x-4">
               <a href="#" className="text-purple-200 hover:text-white transition-colors">

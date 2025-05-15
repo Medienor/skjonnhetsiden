@@ -19,7 +19,7 @@ import GuidePage from "./pages/guider/[slug]";
 import Kalender from "./pages/Kalender";
 import QuestionsPage from "./pages/sporsmal/index";
 import QuestionPage from "./pages/sporsmal/[slug]";
-import SamarbeidPage from "./pages/samarbeid";
+import SamarbeidPage from "./pages/SamarbeidPage";
 import { OfferBar } from '@/components/OfferBar';
 import CompanySearch from "@/pages/CompanySearch";
 import { BehandlingPage } from '@/pages/BehandlingPage';
@@ -28,6 +28,8 @@ import TreatmentCityPage from '@/pages/TreatmentCityPage';
 import Cookies from "@/pages/Cookies";
 import ArtiklerPage from "./pages/artikler";
 import ArticlePage from "./pages/artikler/[slug]";
+import PrisguiderPage from "./pages/prisguider";
+import PrisguidePage from "./pages/prisguider/[slug]";
 
 const queryClient = new QueryClient();
 
@@ -126,6 +128,14 @@ const router = createBrowserRouter([
       {
         path: "/artikler/:slug",
         element: <ArticlePage />,
+      },
+      {
+        path: "/prisguider",
+        element: <PrisguiderPage />,
+      },
+      {
+        path: "/prisguider/:slug",
+        element: <PrisguidePage />,
       },
     ],
   },

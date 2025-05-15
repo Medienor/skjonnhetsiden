@@ -398,6 +398,14 @@ const TreatmentCityPage = () => {
                 Klinikker i {denormalizeMunicipalityName(city)}
               </h2>
 
+              {/* Info Box */}
+              <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-md" role="alert">
+                <p className="text-sm">
+                  Disse klinikkene tilbyr nødvendigvis ikke {treatment.title.toLowerCase()} i dette området. 
+                  Sjekk den enkelte klinikkens nettside for nøyaktig informasjon om tjenester.
+                </p>
+              </div>
+
               {sortedCompanies.length > 0 ? (
                 <>
                   <div className="space-y-6">
