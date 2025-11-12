@@ -19454,50 +19454,6 @@
   "registrertIPartiregisteret" : false,
   "links" : [ ]
 }, {
-  "organisasjonsnummer" : "833352652",
-  "navn" : "FOSS HELSE AS",
-  "organisasjonsform" : {
-    "kode" : "AS",
-    "beskrivelse" : "Aksjeselskap",
-    "links" : [ ]
-  },
-  "registreringsdatoEnhetsregisteret" : "2024-04-23",
-  "registrertIMvaregisteret" : false,
-  "naeringskode1" : {
-    "kode" : "86.909",
-    "beskrivelse" : "Andre helsetjenester"
-  },
-  "harRegistrertAntallAnsatte" : true,
-  "registreringsdatoAntallAnsatteEnhetsregisteret" : "2024-06-12",
-  "registreringsdatoAntallAnsatteNAVAaregisteret" : "2024-06-10",
-  "forretningsadresse" : {
-    "land" : "Norge",
-    "landkode" : "NO",
-    "postnummer" : "3264",
-    "poststed" : "LARVIK",
-    "adresse" : [ "Stallbakken 19" ],
-    "kommune" : "LARVIK",
-    "kommunenummer" : "3909"
-  },
-  "stiftelsesdato" : "2024-03-19",
-  "institusjonellSektorkode" : {
-    "kode" : "2100",
-    "beskrivelse" : "Private aksjeselskaper mv."
-  },
-  "registrertIForetaksregisteret" : true,
-  "registrertIStiftelsesregisteret" : false,
-  "registrertIFrivillighetsregisteret" : false,
-  "konkurs" : false,
-  "underAvvikling" : false,
-  "underTvangsavviklingEllerTvangsopplosning" : false,
-  "maalform" : "Bokmål",
-  "vedtektsdato" : "2024-03-19",
-  "vedtektsfestetFormaal" : [ "Selge varer og tjenester innen kiropraktorarbeid og annet som", "naturlig sammenfaller med dette, samt deltakelse i andre selskaper,", "investeringer og nærliggende virksomhet." ],
-  "aktivitet" : [ "Kiropraktor." ],
-  "registreringsdatoForetaksregisteret" : "2024-04-23",
-  "registrertIPartiregisteret" : false,
-  "links" : [ ]
-}, {
   "organisasjonsnummer" : "916364563",
   "navn" : "FOSSAAS AS",
   "organisasjonsform" : {
